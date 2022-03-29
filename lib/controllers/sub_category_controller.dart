@@ -7,7 +7,7 @@ class SubCategoryController extends GetxController {
   getSubCategories() {
     subCategoryTypes = [
       SubCategory(
-        "Ata",
+        "Atta",
         [
           "Aashirvaad Whole Wheat Atta",
           "Aashirvaad Sugar Release Control Atta",
