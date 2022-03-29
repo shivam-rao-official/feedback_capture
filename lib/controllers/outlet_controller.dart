@@ -46,6 +46,10 @@ class OutletController extends GetxController {
         "out0010",
         "Outlet-10",
       ),
+      Outlet(
+        "others",
+        "Others",
+      ),
     ];
   }
 }
