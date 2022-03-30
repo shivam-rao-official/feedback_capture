@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:feedback_capture/consts/app_fonts.dart';
@@ -45,6 +44,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
   final _subCategoryController = SubCategoryController();
   final _feedback = TextEditingController();
   final _cameraController = ImageController();
+  final _cameraController1 = ImageController();
+  final _cameraController2 = ImageController();
 
   // DB INSTANCE
   final dbHelper = DBHelper.instance;
@@ -79,6 +80,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
         selectedGenreOfFeedback = null;
         _feedback.clear();
         _cameraController.selectedImagePath.value = '';
+        _cameraController1.selectedImagePath.value = '';
+        _cameraController2.selectedImagePath.value = '';
       });
     } catch (e) {
       //
@@ -128,6 +131,10 @@ class _FeedbackPageState extends State<FeedbackPage> {
     _companyController.dispose();
     _categoryController.dispose();
     _subCategoryController.dispose();
+    _feedback.dispose();
+    _cameraController.dispose();
+    _cameraController1.dispose();
+    _cameraController2.dispose();
     super.dispose();
   }
 
@@ -407,117 +414,133 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                   ),
                                   maxLength: 300,
                                   controller: _feedback,
+                                  style: const TextStyle(
+                                    fontFamily: AppFonts.appFont,
+                                    fontSize: AppFonts.fontSize,
+                                  ),
                                 ),
                                 const SizedBox(
                                   height: 7.0,
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      _cameraController
-                                          .getImage(ImageSource.gallery);
-                                    },
-                                    child: imagePicker(
-                                      Obx(() {
-                                        return _cameraController
-                                                    .selectedImagePath.value ==
-                                                ''
-                                            ? Icon(
-                                                Icons.add_a_photo,
-                                                color: Colors.grey
-                                                    .withOpacity(0.4),
-                                              )
-                                            : Image.file(File(_cameraController
-                                                .selectedImagePath.value), fit: BoxFit.cover,);
-                                      }),
-                                    ),
-                                  ),
-                                ),
-                                // SingleChildScrollView(
-                                //   scrollDirection: Axis.horizontal,
-                                //   child: Row(
-                                //     mainAxisAlignment:
-                                //         MainAxisAlignment.spaceBetween,
-                                //     children: [
-                                //       Padding(
-                                //         padding: const EdgeInsets.all(8.0),
-                                //         child: GestureDetector(
-                                //           onTap: () {
-                                //             _cameraController
-                                //                 .getImage(ImageSource.gallery);
-                                //           },
-                                //           child: imagePicker(
-                                //             Obx(() {
-                                //               return _cameraController
-                                //                           .selectedImagePath
-                                //                           .value ==
-                                //                       ''
-                                //                   ? Icon(
-                                //                       Icons.add_a_photo,
-                                //                       color: Colors.grey
-                                //                           .withOpacity(0.4),
-                                //                     )
-                                //                   : Image.file(File(
-                                //                       _cameraController
-                                //                           .selectedImagePath
-                                //                           .value));
-                                //             }),
-                                //           ),
-                                //         ),
-                                //       ),
-                                //       GestureDetector(
-                                //         onTap: () {
-                                //           _cameraController
-                                //               .getImage(ImageSource.gallery);
-                                //         },
-                                //         child: imagePicker(
-                                //           Obx(() {
-                                //             return _cameraController
-                                //                         .selectedImagePath
-                                //                         .value ==
-                                //                     ''
-                                //                 ? Icon(
-                                //                     Icons.add_a_photo,
-                                //                     color: Colors.grey
-                                //                         .withOpacity(0.4),
-                                //                   )
-                                //                 : Image.file(File(
-                                //                     _cameraController
-                                //                         .selectedImagePath
-                                //                         .value));
-                                //           }),
-                                //         ),
-                                //       ),
-                                //       Padding(
-                                //         padding: const EdgeInsets.all(8.0),
-                                //         child: GestureDetector(
-                                //           onTap: () {
-                                //             _cameraController
-                                //                 .getImage(ImageSource.gallery);
-                                //           },
-                                //           child: imagePicker(
-                                //             Obx(() {
-                                //               return _cameraController
-                                //                           .selectedImagePath
-                                //                           .value ==
-                                //                       ''
-                                //                   ? Icon(
-                                //                       Icons.add_a_photo,
-                                //                       color: Colors.grey
-                                //                           .withOpacity(0.4),
-                                //                     )
-                                //                   : Image.file(File(
-                                //                       _cameraController
-                                //                           .selectedImagePath
-                                //                           .value));
-                                //             }),
-                                //           ),
-                                //         ),
-                                //       ),
-                                //     ],
+                                // Padding(
+                                //   padding: const EdgeInsets.all(8.0),
+                                //   child: GestureDetector(
+                                //     onTap: () {
+                                //       _cameraController
+                                //           .getImage(ImageSource.gallery);
+                                //     },
+                                //     child: imagePicker(
+                                //       Obx(() {
+                                //         return _cameraController
+                                //                     .selectedImagePath.value ==
+                                //                 ''
+                                //             ? Icon(
+                                //                 Icons.add_a_photo,
+                                //                 color: Colors.grey
+                                //                     .withOpacity(0.4),
+                                //               )
+                                //             : Image.file(
+                                //                 File(_cameraController
+                                //                     .selectedImagePath.value),
+                                //                 fit: BoxFit.cover,
+                                //               );
+                                //       }),
+                                //     ),
                                 //   ),
                                 // ),
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      SizedBox(
+                                        width: 100,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            _cameraController
+                                                .getImage(ImageSource.gallery);
+                                          },
+                                          child: imagePicker(
+                                            Obx(() {
+                                              return _cameraController
+                                                          .selectedImagePath
+                                                          .value ==
+                                                      ''
+                                                  ? Icon(
+                                                      Icons.add_a_photo,
+                                                      color: Colors.grey
+                                                          .withOpacity(0.4),
+                                                    )
+                                                  : Image.file(File(
+                                                      _cameraController
+                                                          .selectedImagePath
+                                                          .value));
+                                            }),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 3.0,
+                                      ),
+                                      SizedBox(
+                                        width: 100,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            _cameraController1
+                                                .getImage(ImageSource.gallery);
+                                          },
+                                          child: imagePicker(
+                                            Obx(() {
+                                              return _cameraController1
+                                                          .selectedImagePath
+                                                          .value ==
+                                                      ''
+                                                  ? Icon(
+                                                      Icons.add_a_photo,
+                                                      color: Colors.grey
+                                                          .withOpacity(0.4),
+                                                    )
+                                                  : Image.file(File(
+                                                      _cameraController1
+                                                          .selectedImagePath
+                                                          .value));
+                                            }),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 3.0,
+                                      ),
+                                      SizedBox(
+                                        width: 100,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            _cameraController2
+                                                .getImage(ImageSource.gallery);
+                                          },
+                                          child: imagePicker(
+                                            Obx(() {
+                                              return _cameraController2
+                                                          .selectedImagePath
+                                                          .value ==
+                                                      ''
+                                                  ? Icon(
+                                                      Icons.add_a_photo,
+                                                      color: Colors.grey
+                                                          .withOpacity(0.4),
+                                                    )
+                                                  : Image.file(File(
+                                                      _cameraController2
+                                                          .selectedImagePath
+                                                          .value));
+                                            }),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                                 const SizedBox(
                                   height: 30,
                                 ),
