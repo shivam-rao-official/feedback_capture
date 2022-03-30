@@ -1,11 +1,16 @@
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:feedback_capture/consts/app_fonts.dart';
 import 'package:feedback_capture/consts/app_sizes.dart';
 import 'package:feedback_capture/consts/app_themes.dart';
 import 'package:feedback_capture/controllers/category_controller.dart';
 import 'package:feedback_capture/controllers/company_controller.dart';
 import 'package:feedback_capture/controllers/feedback_type_controller.dart';
+import 'package:feedback_capture/controllers/image_controller.dart';
 import 'package:feedback_capture/controllers/outlet_controller.dart';
 import 'package:feedback_capture/controllers/sub_category_controller.dart';
+import 'package:feedback_capture/dbhelper/db_helper.dart';
 import 'package:feedback_capture/models/category.dart';
 import 'package:feedback_capture/models/company.dart';
 import 'package:feedback_capture/models/feedback_type.dart';
@@ -13,6 +18,8 @@ import 'package:feedback_capture/models/outlet.dart';
 import 'package:feedback_capture/views/widgets/custom_button.dart';
 import 'package:feedback_capture/views/widgets/custom_clip_path.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 class FeedbackPage extends StatefulWidget {
   const FeedbackPage({Key? key}) : super(key: key);
@@ -35,6 +42,33 @@ class _FeedbackPageState extends State<FeedbackPage> {
   final _companyController = CompanyController();
   final _categoryController = CategoryController();
   final _subCategoryController = SubCategoryController();
+  final _feedback = TextEditingController();
+  final _cameraController = ImageController();
+
+  // DB INSTANCE
+  final dbHelper = DBHelper.instance;
+
+  void insertData() async {
+    Map<String, dynamic> row = {
+      // $colIndex INTEGER PRIMARY KEY,
+      // $feedbackType TEXT NOT NULL,
+      // $outlet TEXT NOT NULL,
+      // $company TEXT NOT NULL,
+      // $category TEXT NOT NULL,
+      // $subCategory TEXT NOT NULL,
+      // $genreOfFeedback TEXT NOT NULL,
+      // $feedback TEXT NOT NULL,
+      DBHelper.outlet: selectedOutletValue,
+      DBHelper.feedbackType: selectedFeedbackValue,
+      DBHelper.company: selectedCompanyValue,
+      DBHelper.category: selectedCategoryValue,
+      DBHelper.subCategory: selectedSubCategoryValue,
+      DBHelper.genreOfFeedback: selectedFeedbackValue,
+      DBHelper.feedback: _feedback.text,
+    };
+    final id = await dbHelper.putData(row);
+    log(id.toString());
+  }
 
   List<Outlet> outletItems = [];
   List<FeedbackType> feedbackItems = [];
@@ -49,8 +83,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
     "Merchandising solutions",
     "Others"
   ];
-
-  late String _feedback;
 
   @override
   void initState() {
@@ -358,8 +390,119 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                   decoration: const InputDecoration(
                                     hintText: "Enter your feedback",
                                   ),
-                                  onSaved: (value) => _feedback = value!,
+                                  maxLength: 300,
+                                  controller: _feedback,
                                 ),
+                                const SizedBox(
+                                  height: 7.0,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      _cameraController
+                                          .getImage(ImageSource.camera);
+                                    },
+                                    child: imagePicker(
+                                      Obx(() {
+                                        return _cameraController
+                                                    .selectedImagePath.value ==
+                                                ''
+                                            ? Icon(
+                                                Icons.add_a_photo,
+                                                color: Colors.grey
+                                                    .withOpacity(0.4),
+                                              )
+                                            : Image.file(File(_cameraController
+                                                .selectedImagePath.value));
+                                      }),
+                                    ),
+                                  ),
+                                ),
+                                // SingleChildScrollView(
+                                //   scrollDirection: Axis.horizontal,
+                                //   child: Row(
+                                //     mainAxisAlignment:
+                                //         MainAxisAlignment.spaceBetween,
+                                //     children: [
+                                //       Padding(
+                                //         padding: const EdgeInsets.all(8.0),
+                                //         child: GestureDetector(
+                                //           onTap: () {
+                                //             _cameraController
+                                //                 .getImage(ImageSource.gallery);
+                                //           },
+                                //           child: imagePicker(
+                                //             Obx(() {
+                                //               return _cameraController
+                                //                           .selectedImagePath
+                                //                           .value ==
+                                //                       ''
+                                //                   ? Icon(
+                                //                       Icons.add_a_photo,
+                                //                       color: Colors.grey
+                                //                           .withOpacity(0.4),
+                                //                     )
+                                //                   : Image.file(File(
+                                //                       _cameraController
+                                //                           .selectedImagePath
+                                //                           .value));
+                                //             }),
+                                //           ),
+                                //         ),
+                                //       ),
+                                //       GestureDetector(
+                                //         onTap: () {
+                                //           _cameraController
+                                //               .getImage(ImageSource.gallery);
+                                //         },
+                                //         child: imagePicker(
+                                //           Obx(() {
+                                //             return _cameraController
+                                //                         .selectedImagePath
+                                //                         .value ==
+                                //                     ''
+                                //                 ? Icon(
+                                //                     Icons.add_a_photo,
+                                //                     color: Colors.grey
+                                //                         .withOpacity(0.4),
+                                //                   )
+                                //                 : Image.file(File(
+                                //                     _cameraController
+                                //                         .selectedImagePath
+                                //                         .value));
+                                //           }),
+                                //         ),
+                                //       ),
+                                //       Padding(
+                                //         padding: const EdgeInsets.all(8.0),
+                                //         child: GestureDetector(
+                                //           onTap: () {
+                                //             _cameraController
+                                //                 .getImage(ImageSource.gallery);
+                                //           },
+                                //           child: imagePicker(
+                                //             Obx(() {
+                                //               return _cameraController
+                                //                           .selectedImagePath
+                                //                           .value ==
+                                //                       ''
+                                //                   ? Icon(
+                                //                       Icons.add_a_photo,
+                                //                       color: Colors.grey
+                                //                           .withOpacity(0.4),
+                                //                     )
+                                //                   : Image.file(File(
+                                //                       _cameraController
+                                //                           .selectedImagePath
+                                //                           .value));
+                                //             }),
+                                //           ),
+                                //         ),
+                                //       ),
+                                //     ],
+                                //   ),
+                                // ),
                                 const SizedBox(
                                   height: 30,
                                 ),
@@ -370,7 +513,15 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                         _formKey.currentState!.validate();
                                     if (validate) {
                                       // _formKey.currentState!.save();
+                                      log("$selectedOutletValue");
+                                      log("$selectedFeedbackValue");
+                                      log("$selectedCompanyValue");
+                                      log("$selectedCategoryValue");
+                                      log("$selectedSubCategoryValue");
+                                      log("$selectedGenreOfFeedback");
+                                      log(_feedback.text);
 
+                                      insertData();
                                     }
                                   },
                                 ),
@@ -389,6 +540,35 @@ class _FeedbackPageState extends State<FeedbackPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget imagePicker(Obx obx) {
+    return Container(
+      child: Center(child: obx),
+      height: 150,
+      width: MediaQuery.of(context).size.width,
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            width: 3.0,
+            color: Colors.amber.withOpacity(0.4),
+          ),
+          right: BorderSide(
+            width: 3.0,
+            color: Colors.amber.withOpacity(0.4),
+          ),
+          bottom: BorderSide(
+            width: 3.0,
+            color: Colors.amber.withOpacity(0.4),
+          ),
+          left: BorderSide(
+            width: 3.0,
+            color: Colors.amber.withOpacity(0.4),
+          ),
+        ),
+        borderRadius: BorderRadius.circular(5),
       ),
     );
   }
