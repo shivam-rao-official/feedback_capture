@@ -15,6 +15,7 @@ import 'package:feedback_capture/models/category.dart';
 import 'package:feedback_capture/models/company.dart';
 import 'package:feedback_capture/models/feedback_type.dart';
 import 'package:feedback_capture/models/outlet.dart';
+import 'package:feedback_capture/views/dialogs/toast_msg.dart';
 import 'package:feedback_capture/views/widgets/custom_button.dart';
 import 'package:feedback_capture/views/widgets/custom_clip_path.dart';
 import 'package:flutter/material.dart';
@@ -49,25 +50,39 @@ class _FeedbackPageState extends State<FeedbackPage> {
   final dbHelper = DBHelper.instance;
 
   void insertData() async {
-    Map<String, dynamic> row = {
-      // $colIndex INTEGER PRIMARY KEY,
-      // $feedbackType TEXT NOT NULL,
-      // $outlet TEXT NOT NULL,
-      // $company TEXT NOT NULL,
-      // $category TEXT NOT NULL,
-      // $subCategory TEXT NOT NULL,
-      // $genreOfFeedback TEXT NOT NULL,
-      // $feedback TEXT NOT NULL,
-      DBHelper.outlet: selectedOutletValue,
-      DBHelper.feedbackType: selectedFeedbackValue,
-      DBHelper.company: selectedCompanyValue,
-      DBHelper.category: selectedCategoryValue,
-      DBHelper.subCategory: selectedSubCategoryValue,
-      DBHelper.genreOfFeedback: selectedFeedbackValue,
-      DBHelper.feedback: _feedback.text,
-    };
-    final id = await dbHelper.putData(row);
-    log(id.toString());
+    try {
+      Map<String, dynamic> row = {
+        // $colIndex INTEGER PRIMARY KEY,
+        // $feedbackType TEXT NOT NULL,
+        // $outlet TEXT NOT NULL,
+        // $company TEXT NOT NULL,
+        // $category TEXT NOT NULL,
+        // $subCategory TEXT NOT NULL,
+        // $genreOfFeedback TEXT NOT NULL,
+        // $feedback TEXT NOT NULL,
+        DBHelper.outlet: selectedOutletValue,
+        DBHelper.feedbackType: selectedFeedbackValue,
+        DBHelper.company: selectedCompanyValue,
+        DBHelper.category: selectedCategoryValue,
+        DBHelper.subCategory: selectedSubCategoryValue,
+        DBHelper.genreOfFeedback: selectedFeedbackValue,
+        DBHelper.feedback: _feedback.text,
+      };
+      await dbHelper.putData(row);
+      ToastMsg().successToast("Thank You for the feedback");
+      setState(() {
+        selectedOutletValue = null;
+        selectedFeedbackValue = null;
+        selectedCompanyValue = null;
+        selectedCategoryValue = null;
+        selectedSubCategoryValue = null;
+        selectedGenreOfFeedback = null;
+        _feedback.clear();
+        _cameraController.selectedImagePath.value = '';
+      });
+    } catch (e) {
+      //
+    }
   }
 
   List<Outlet> outletItems = [];
@@ -401,7 +416,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                   child: GestureDetector(
                                     onTap: () {
                                       _cameraController
-                                          .getImage(ImageSource.camera);
+                                          .getImage(ImageSource.gallery);
                                     },
                                     child: imagePicker(
                                       Obx(() {
@@ -414,7 +429,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                                     .withOpacity(0.4),
                                               )
                                             : Image.file(File(_cameraController
-                                                .selectedImagePath.value));
+                                                .selectedImagePath.value), fit: BoxFit.cover,);
                                       }),
                                     ),
                                   ),
@@ -513,13 +528,13 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                         _formKey.currentState!.validate();
                                     if (validate) {
                                       // _formKey.currentState!.save();
-                                      log("$selectedOutletValue");
-                                      log("$selectedFeedbackValue");
-                                      log("$selectedCompanyValue");
-                                      log("$selectedCategoryValue");
-                                      log("$selectedSubCategoryValue");
-                                      log("$selectedGenreOfFeedback");
-                                      log(_feedback.text);
+                                      // log("$selectedOutletValue");
+                                      // log("$selectedFeedbackValue");
+                                      // log("$selectedCompanyValue");
+                                      // log("$selectedCategoryValue");
+                                      // log("$selectedSubCategoryValue");
+                                      // log("$selectedGenreOfFeedback");
+                                      // log(_feedback.text);
 
                                       insertData();
                                     }

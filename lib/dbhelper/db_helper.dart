@@ -58,11 +58,11 @@ class DBHelper {
   }
 
 
-  Future<int> putData(Map<String, dynamic> row) async {
+  Future<void> putData(Map<String, dynamic> row) async {
 
     Database? db = await instance.database;
 
-    return await db!.insert(tableName, row);
+    await db!.insert(tableName, row);
   }
 
   
