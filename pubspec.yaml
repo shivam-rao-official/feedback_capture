@@ -52,14 +52,14 @@ flutter_icons:
 
 flutter_native_splash:
   image: "assets/images/logo.png"
-  color: "FFFFFF"
+  color: "FFB302"
   android_gravity: center
   android: true
   ios: true
   web: true
   fullscreen: true
   image_dark: assets/images/logo.png
-  color_dark: "000000"
+  color_dark: "FFB302"
 
 
 # For information on the generic Dart part of this file, see the
