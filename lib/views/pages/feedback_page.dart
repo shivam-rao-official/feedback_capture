@@ -227,14 +227,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
                   Padding(
                     padding: const EdgeInsets.only(
                       top: 135.0,
-<<<<<<< HEAD
                       left: AppSizes.bigPadding - 10,
                       right: AppSizes.bigPadding - 10,
-=======
-                      left: AppSizes.bigPadding,
-                      right: AppSizes.bigPadding,
-                      // bottom: AppSizes.bigPadding,
->>>>>>> aa8cb3177468dce1f8d18a9da0558365e6970a7e
                     ),
                     child: Container(
                       height: MediaQuery.of(context).size.height - 185,
