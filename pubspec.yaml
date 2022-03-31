@@ -59,7 +59,7 @@ flutter_native_splash:
   web: true
   fullscreen: true
   image_dark: assets/images/logo.png
-  color_dark: "000000"
+  color_dark: "FFB302"
 
 
 # For information on the generic Dart part of this file, see the

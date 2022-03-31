@@ -199,9 +199,10 @@ class _FeedbackPageState extends State<FeedbackPage> {
                       top: 135.0,
                       left: AppSizes.bigPadding,
                       right: AppSizes.bigPadding,
+                      // bottom: AppSizes.bigPadding,
                     ),
                     child: Container(
-                      height: 550,
+                      height: MediaQuery.of(context).size.height - 185,
                       width: double.infinity,
                       decoration: const BoxDecoration(
                           color: Color.fromARGB(255, 236, 236, 236),
@@ -422,32 +423,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                 const SizedBox(
                                   height: 7.0,
                                 ),
-                                // Padding(
-                                //   padding: const EdgeInsets.all(8.0),
-                                //   child: GestureDetector(
-                                //     onTap: () {
-                                //       _cameraController
-                                //           .getImage(ImageSource.gallery);
-                                //     },
-                                //     child: imagePicker(
-                                //       Obx(() {
-                                //         return _cameraController
-                                //                     .selectedImagePath.value ==
-                                //                 ''
-                                //             ? Icon(
-                                //                 Icons.add_a_photo,
-                                //                 color: Colors.grey
-                                //                     .withOpacity(0.4),
-                                //               )
-                                //             : Image.file(
-                                //                 File(_cameraController
-                                //                     .selectedImagePath.value),
-                                //                 fit: BoxFit.cover,
-                                //               );
-                                //       }),
-                                //     ),
-                                //   ),
-                                // ),
                                 SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
                                   child: Row(
