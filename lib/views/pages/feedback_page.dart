@@ -207,9 +207,10 @@ class _FeedbackPageState extends State<FeedbackPage> {
                       top: 135.0,
                       left: AppSizes.bigPadding,
                       right: AppSizes.bigPadding,
+                      // bottom: AppSizes.bigPadding,
                     ),
                     child: Container(
-                      height: 550,
+                      height: MediaQuery.of(context).size.height - 185,
                       width: double.infinity,
                       decoration: const BoxDecoration(
                           color: Color.fromARGB(255, 236, 236, 236),
