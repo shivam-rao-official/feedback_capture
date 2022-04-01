@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:feedback_capture/consts/app_fonts.dart';
@@ -10,16 +11,20 @@ import 'package:feedback_capture/controllers/image_controller.dart';
 import 'package:feedback_capture/controllers/outlet_controller.dart';
 import 'package:feedback_capture/controllers/sub_category_controller.dart';
 import 'package:feedback_capture/dbhelper/db_helper.dart';
+import 'package:feedback_capture/dbhelper/imagedb_helper.dart';
 import 'package:feedback_capture/models/category.dart';
 import 'package:feedback_capture/models/company.dart';
 import 'package:feedback_capture/models/feedback_type.dart';
 import 'package:feedback_capture/models/outlet.dart';
 import 'package:feedback_capture/views/dialogs/toast_msg.dart';
+import 'package:feedback_capture/views/pages/feedback_list.dart';
+import 'package:feedback_capture/views/pages/login_page.dart';
 import 'package:feedback_capture/views/widgets/custom_button.dart';
 import 'package:feedback_capture/views/widgets/custom_clip_path.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:get_storage/get_storage.dart';
 
 class FeedbackPage extends StatefulWidget {
   const FeedbackPage({Key? key}) : super(key: key);
@@ -30,6 +35,7 @@ class FeedbackPage extends StatefulWidget {
 
 class _FeedbackPageState extends State<FeedbackPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final storeUserMail = GetStorage();
   String? selectedOutletValue,
       selectedFeedbackValue,
       selectedCompanyValue,
@@ -37,6 +43,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
       selectedSubCategoryValue,
       selectedGenreOfFeedback;
 
+  // Init Controllers
   final _outletController = OutletController();
   final _feedbackController = FeedbackTypeController();
   final _companyController = CompanyController();
@@ -47,20 +54,13 @@ class _FeedbackPageState extends State<FeedbackPage> {
   final _cameraController1 = ImageController();
   final _cameraController2 = ImageController();
 
-  // DB INSTANCE
+  // DB INSTANCE -- Db Insertion
   final dbHelper = DBHelper.instance;
+  final imagedbHelper = ImageDBHelper.instance;
 
   void insertData() async {
     try {
       Map<String, dynamic> row = {
-        // $colIndex INTEGER PRIMARY KEY,
-        // $feedbackType TEXT NOT NULL,
-        // $outlet TEXT NOT NULL,
-        // $company TEXT NOT NULL,
-        // $category TEXT NOT NULL,
-        // $subCategory TEXT NOT NULL,
-        // $genreOfFeedback TEXT NOT NULL,
-        // $feedback TEXT NOT NULL,
         DBHelper.outlet: selectedOutletValue,
         DBHelper.feedbackType: selectedFeedbackValue,
         DBHelper.company: selectedCompanyValue,
@@ -69,7 +69,14 @@ class _FeedbackPageState extends State<FeedbackPage> {
         DBHelper.genreOfFeedback: selectedFeedbackValue,
         DBHelper.feedback: _feedback.text,
       };
+
+      Map<String, dynamic> imagedata = {
+        ImageDBHelper.image1: _cameraController.toBase64String.value,
+        ImageDBHelper.image2: _cameraController1.toBase64String.value,
+        ImageDBHelper.image3: _cameraController2.toBase64String.value,
+      };
       await dbHelper.putData(row);
+      await imagedbHelper.putImage(imagedata);
       ToastMsg().successToast("Thank You for the feedback");
       setState(() {
         selectedOutletValue = null;
@@ -82,11 +89,15 @@ class _FeedbackPageState extends State<FeedbackPage> {
         _cameraController.selectedImagePath.value = '';
         _cameraController1.selectedImagePath.value = '';
         _cameraController2.selectedImagePath.value = '';
+        _cameraController.toBase64String.value = '';
+        _cameraController1.toBase64String.value = '';
+        _cameraController2.toBase64String.value = '';
       });
     } catch (e) {
-      //
+      ToastMsg().errorToast(e.toString());
     }
   }
+  // DB Function End.
 
   List<Outlet> outletItems = [];
   List<FeedbackType> feedbackItems = [];
@@ -140,11 +151,11 @@ class _FeedbackPageState extends State<FeedbackPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      extendBodyBehindAppBar: true,
-      body: SafeArea(
-        child: SingleChildScrollView(
+    return SafeArea(
+      child: Scaffold(
+        extendBody: true,
+        extendBodyBehindAppBar: true,
+        body: SingleChildScrollView(
           child: Column(
             children: [
               Stack(
@@ -168,20 +179,39 @@ class _FeedbackPageState extends State<FeedbackPage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: const [
-                            Text(
-                              "Feedback",
-                              style: TextStyle(
-                                fontFamily: AppFonts.appFont,
-                                fontSize: AppFonts.headingSize,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                              ),
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  "Feedback",
+                                  style: TextStyle(
+                                    fontFamily: AppFonts.appFont,
+                                    fontSize: AppFonts.headingSize,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    storeUserMail.remove("email");
+                                    Get.off(const LoginPage());
+                                  },
+                                  child: const Icon(
+                                    Icons.logout_outlined,
+                                    color: AppThemes.primaryColor,
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    shape: const CircleBorder(),
+                                    primary: Colors.white,
+                                  ),
+                                ),
+                              ],
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10.0,
                             ),
-                            Text(
+                            const Text(
                               "Please provide the following information",
                               style: TextStyle(
                                 fontFamily: AppFonts.appFont,
@@ -197,9 +227,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
                   Padding(
                     padding: const EdgeInsets.only(
                       top: 135.0,
-                      left: AppSizes.bigPadding,
-                      right: AppSizes.bigPadding,
-                      // bottom: AppSizes.bigPadding,
+                      left: AppSizes.bigPadding - 10,
+                      right: AppSizes.bigPadding - 10,
                     ),
                     child: Container(
                       height: MediaQuery.of(context).size.height - 185,
@@ -210,7 +239,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
                       child: Form(
                         key: _formKey,
                         child: Padding(
-                          padding: const EdgeInsets.all(AppSizes.pagePadding),
+                          padding:
+                              const EdgeInsets.all(AppSizes.pagePadding - 10),
                           child: SingleChildScrollView(
                             child: Column(
                               children: [
@@ -412,6 +442,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                   maxLines: 4,
                                   decoration: const InputDecoration(
                                     hintText: "Enter your feedback",
+                                    border: OutlineInputBorder(),
                                   ),
                                   maxLength: 300,
                                   controller: _feedback,
@@ -433,8 +464,29 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                         width: 100,
                                         child: GestureDetector(
                                           onTap: () {
-                                            _cameraController
-                                                .getImage(ImageSource.gallery);
+                                            Get.defaultDialog(
+                                              title: "Choose Image Source",
+                                              titleStyle: const TextStyle(
+                                                fontFamily: AppFonts.appFont,
+                                                fontSize: AppFonts.fontSize,
+                                              ),
+                                              middleText: "",
+                                              textCancel: "Camera",
+                                              cancelTextColor: Colors.black,
+                                              buttonColor:
+                                                  AppThemes.primaryColor,
+                                              onCancel: () {
+                                                _cameraController.getImage(
+                                                    ImageSource.camera);
+                                              },
+                                              textConfirm: "Gallery",
+                                              confirmTextColor: Colors.white,
+                                              onConfirm: () {
+                                                Navigator.pop(context);
+                                                _cameraController.getImage(
+                                                    ImageSource.gallery);
+                                              },
+                                            );
                                           },
                                           child: imagePicker(
                                             Obx(() {
@@ -462,8 +514,29 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                         width: 100,
                                         child: GestureDetector(
                                           onTap: () {
-                                            _cameraController1
-                                                .getImage(ImageSource.gallery);
+                                            Get.defaultDialog(
+                                              title: "Choose Image Source",
+                                              titleStyle: const TextStyle(
+                                                fontFamily: AppFonts.appFont,
+                                                fontSize: AppFonts.fontSize,
+                                              ),
+                                              middleText: "",
+                                              textCancel: "Camera",
+                                              cancelTextColor: Colors.black,
+                                              buttonColor:
+                                                  AppThemes.primaryColor,
+                                              onCancel: () {
+                                                _cameraController1.getImage(
+                                                    ImageSource.camera);
+                                              },
+                                              textConfirm: "Gallery",
+                                              confirmTextColor: Colors.white,
+                                              onConfirm: () {
+                                                Navigator.pop(context);
+                                                _cameraController1.getImage(
+                                                    ImageSource.gallery);
+                                              },
+                                            );
                                           },
                                           child: imagePicker(
                                             Obx(() {
@@ -491,8 +564,29 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                         width: 100,
                                         child: GestureDetector(
                                           onTap: () {
-                                            _cameraController2
-                                                .getImage(ImageSource.gallery);
+                                            Get.defaultDialog(
+                                              title: "Choose Image Source",
+                                              titleStyle: const TextStyle(
+                                                fontFamily: AppFonts.appFont,
+                                                fontSize: AppFonts.fontSize,
+                                              ),
+                                              middleText: "",
+                                              textCancel: "Camera",
+                                              cancelTextColor: Colors.black,
+                                              buttonColor:
+                                                  AppThemes.primaryColor,
+                                              onCancel: () {
+                                                _cameraController2.getImage(
+                                                    ImageSource.camera);
+                                              },
+                                              textConfirm: "Gallery",
+                                              confirmTextColor: Colors.white,
+                                              onConfirm: () {
+                                                Navigator.pop(context);
+                                                _cameraController2.getImage(
+                                                    ImageSource.gallery);
+                                              },
+                                            );
                                           },
                                           child: imagePicker(
                                             Obx(() {
@@ -525,15 +619,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                     var validate =
                                         _formKey.currentState!.validate();
                                     if (validate) {
-                                      // _formKey.currentState!.save();
-                                      // log("$selectedOutletValue");
-                                      // log("$selectedFeedbackValue");
-                                      // log("$selectedCompanyValue");
-                                      // log("$selectedCategoryValue");
-                                      // log("$selectedSubCategoryValue");
-                                      // log("$selectedGenreOfFeedback");
-                                      // log(_feedback.text);
-
                                       insertData();
                                     }
                                   },
@@ -552,6 +637,12 @@ class _FeedbackPageState extends State<FeedbackPage> {
               ),
             ],
           ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Get.to(const FeedbackList());
+          },
+          child: const Icon(Icons.list_alt_outlined),
         ),
       ),
     );
