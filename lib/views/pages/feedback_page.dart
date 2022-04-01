@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:feedback_capture/consts/app_fonts.dart';
@@ -21,9 +20,9 @@ import 'package:feedback_capture/views/pages/feedback_list.dart';
 import 'package:feedback_capture/views/pages/login_page.dart';
 import 'package:feedback_capture/views/widgets/custom_button.dart';
 import 'package:feedback_capture/views/widgets/custom_clip_path.dart';
+import 'package:feedback_capture/views/widgets/custom_open_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:get_storage/get_storage.dart';
 
 class FeedbackPage extends StatefulWidget {
@@ -195,7 +194,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                 ElevatedButton(
                                   onPressed: () {
                                     storeUserMail.remove("email");
-                                    Get.off(const LoginPage());
+                                    Get.off(() => const LoginPage());
                                   },
                                   child: const Icon(
                                     Icons.logout_outlined,
@@ -433,7 +432,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                   }).toList(),
                                 ),
                                 const SizedBox(
-                                  height: 7.0,
+                                  height: 13.0,
                                 ),
                                 TextFormField(
                                   minLines: 4,
@@ -464,29 +463,14 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                         width: 100,
                                         child: GestureDetector(
                                           onTap: () {
-                                            Get.defaultDialog(
-                                              title: "Choose Image Source",
-                                              titleStyle: const TextStyle(
-                                                fontFamily: AppFonts.appFont,
-                                                fontSize: AppFonts.fontSize,
-                                              ),
-                                              middleText: "",
-                                              textCancel: "Camera",
-                                              cancelTextColor: Colors.black,
-                                              buttonColor:
-                                                  AppThemes.primaryColor,
-                                              onCancel: () {
-                                                _cameraController.getImage(
-                                                    ImageSource.camera);
-                                              },
-                                              textConfirm: "Gallery",
-                                              confirmTextColor: Colors.white,
-                                              onConfirm: () {
-                                                Navigator.pop(context);
-                                                _cameraController.getImage(
-                                                    ImageSource.gallery);
-                                              },
-                                            );
+                                            showModalBottomSheet(
+                                                context: context,
+                                                builder: ((builder) =>
+                                                    CustomOpenImage(
+                                                      context: context,
+                                                      controller:
+                                                          _cameraController,
+                                                    )));
                                           },
                                           child: imagePicker(
                                             Obx(() {
@@ -514,29 +498,14 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                         width: 100,
                                         child: GestureDetector(
                                           onTap: () {
-                                            Get.defaultDialog(
-                                              title: "Choose Image Source",
-                                              titleStyle: const TextStyle(
-                                                fontFamily: AppFonts.appFont,
-                                                fontSize: AppFonts.fontSize,
-                                              ),
-                                              middleText: "",
-                                              textCancel: "Camera",
-                                              cancelTextColor: Colors.black,
-                                              buttonColor:
-                                                  AppThemes.primaryColor,
-                                              onCancel: () {
-                                                _cameraController1.getImage(
-                                                    ImageSource.camera);
-                                              },
-                                              textConfirm: "Gallery",
-                                              confirmTextColor: Colors.white,
-                                              onConfirm: () {
-                                                Navigator.pop(context);
-                                                _cameraController1.getImage(
-                                                    ImageSource.gallery);
-                                              },
-                                            );
+                                            showModalBottomSheet(
+                                                context: context,
+                                                builder: ((builder) =>
+                                                    CustomOpenImage(
+                                                      context: context,
+                                                      controller:
+                                                          _cameraController1,
+                                                    )));
                                           },
                                           child: imagePicker(
                                             Obx(() {
@@ -564,29 +533,14 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                         width: 100,
                                         child: GestureDetector(
                                           onTap: () {
-                                            Get.defaultDialog(
-                                              title: "Choose Image Source",
-                                              titleStyle: const TextStyle(
-                                                fontFamily: AppFonts.appFont,
-                                                fontSize: AppFonts.fontSize,
-                                              ),
-                                              middleText: "",
-                                              textCancel: "Camera",
-                                              cancelTextColor: Colors.black,
-                                              buttonColor:
-                                                  AppThemes.primaryColor,
-                                              onCancel: () {
-                                                _cameraController2.getImage(
-                                                    ImageSource.camera);
-                                              },
-                                              textConfirm: "Gallery",
-                                              confirmTextColor: Colors.white,
-                                              onConfirm: () {
-                                                Navigator.pop(context);
-                                                _cameraController2.getImage(
-                                                    ImageSource.gallery);
-                                              },
-                                            );
+                                            showModalBottomSheet(
+                                                context: context,
+                                                builder: ((builder) =>
+                                                    CustomOpenImage(
+                                                      context: context,
+                                                      controller:
+                                                          _cameraController2,
+                                                    )));
                                           },
                                           child: imagePicker(
                                             Obx(() {
@@ -640,7 +594,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Get.to(const FeedbackList());
+            Get.to(() => const FeedbackList());
           },
           child: const Icon(Icons.list_alt_outlined),
         ),

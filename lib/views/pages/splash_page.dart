@@ -29,7 +29,7 @@ class _SplashPageState extends State<SplashPage> {
           _defaultHome = const FeedbackPage();
         });
       }
-      Get.offAll(_defaultHome);
+      Get.offAll(() => _defaultHome);
     });
   }
 
@@ -40,7 +40,7 @@ class _SplashPageState extends State<SplashPage> {
         extendBody: true,
         extendBodyBehindAppBar: true,
         body: SingleChildScrollView(
-          child: Container(
+          child: SizedBox(
             height: MediaQuery.of(context).size.height - 100,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -91,7 +91,7 @@ class _SplashPageState extends State<SplashPage> {
                     ),
                   ),
                 ),
-                CircularProgressIndicator(),
+                const CircularProgressIndicator(),
               ],
             ),
           ),

@@ -24,11 +24,11 @@ class _OtpPageState extends State<OtpPage> {
   final storeUserMail = GetStorage();
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      extendBodyBehindAppBar: true,
-      body: SafeArea(
-        child: SingleChildScrollView(
+    return SafeArea(
+      child: Scaffold(
+        extendBody: true,
+        extendBodyBehindAppBar: true,
+        body: SingleChildScrollView(
           child: Column(
             children: [
               Stack(

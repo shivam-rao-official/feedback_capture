@@ -48,17 +48,17 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo.png"
+  image_path: "assets/images/logo1024.png"
 
 flutter_native_splash:
-  image: "assets/images/logo.png"
+  image: "assets/images/logo_fore.png"
   color: "FFB302"
   android_gravity: center
   android: true
   ios: true
   web: true
   fullscreen: true
-  image_dark: assets/images/logo.png
+  image_dark: assets/images/logo_fore.png
   color_dark: "FFB302"
 
 
