@@ -1,6 +1,10 @@
+import 'dart:developer';
+
 import 'package:feedback_capture/dbhelper/db_helper.dart';
 import 'package:feedback_capture/dbhelper/imagedb_helper.dart';
+import 'package:feedback_capture/views/pages/feedback_show.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 class FeedbackList extends StatefulWidget {
@@ -17,7 +21,9 @@ class _FeedbackListState extends State<FeedbackList> {
   int len = 0;
   Future<List> getAll(String email) async {
     var row = await dbHelper.getData(email);
+    var r = await imagedbHelper.getImage(email);
     len = row.length;
+    log(r.toString());
     return row;
   }
 
@@ -52,7 +58,27 @@ class _FeedbackListState extends State<FeedbackList> {
                       const EdgeInsets.only(top: 8.0, right: 8.0, left: 8.0),
                   child: ListTile(
                     trailing: IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Get.to(
+                            FeedbackShow(
+                              colId: (snapshot.data! as List)[i]['columnIndex'],
+                              selectedOutletValue: (snapshot.data! as List)[i]
+                                  ['OutletValue'],
+                              selectedFeedbackValue: (snapshot.data! as List)[i]
+                                  ['FeedbackValue'],
+                              selectedCompanyValue: (snapshot.data! as List)[i]
+                                  ['CompanyValue'],
+                              selectedCategoryValue: (snapshot.data! as List)[i]
+                                  ['CategoryValue'],
+                              selectedSubCategoryValue: (snapshot.data!
+                                  as List)[i]['SubCategoryValue'],
+                              selectedGenreOfFeedback: (snapshot.data!
+                                  as List)[i]['GenreOfFeedback'],
+                              selectedFeedback: (snapshot.data! as List)[i]
+                                  ['Feedback'],
+                            ),
+                          );
+                        },
                         icon: const Icon(
                           Icons.arrow_forward_ios_rounded,
                           size: 15,
