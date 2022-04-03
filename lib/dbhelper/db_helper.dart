@@ -14,6 +14,7 @@ class DBHelper {
 
   // DB column name
   static const colIndex = "columnIndex";
+  static const email = "UserEmail";
   static const outlet = "OutletValue";
   static const feedbackType = "FeedbackValue";
   static const company = "CompanyValue";
@@ -49,6 +50,7 @@ class DBHelper {
     await db.execute('''
       CREATE TABLE $tableName (
         $colIndex INTEGER PRIMARY KEY,
+        $email TEXT NOT NULL,
         $feedbackType TEXT NOT NULL,
         $outlet TEXT NOT NULL,
         $company TEXT NOT NULL,
@@ -72,12 +74,13 @@ class DBHelper {
   Future<void> dropDB() async {
     Database? db = await instance.database;
 
-    await db!.delete(tableName);
+    await db!.rawQuery('DROP DATABASE $feedback');
+    // await db!.delete(tableName);
   }
 
   Future<List<Map<String, dynamic>>> getData() async {
     Database? db = await instance.database;
 
-    return await db!.query(tableName);
+    return await db!.query(tableName, where: email);
   }
 }

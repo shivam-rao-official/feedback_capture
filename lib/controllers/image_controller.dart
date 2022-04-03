@@ -11,12 +11,14 @@ import 'package:image_picker/image_picker.dart';
 class ImageController extends GetxController {
   var selectedImagePath = ''.obs;
   var toBase64String = ''.obs;
+  RxBool isImageSelected = false.obs;
   RxBool isConverted = false.obs;
 
   void getImage(ImageSource imgSrc) async {
     final pickedFile = await ImagePicker().getImage(source: imgSrc);
     if (pickedFile != null) {
       selectedImagePath.value = pickedFile.path;
+      isImageSelected = RxBool(true);
       isConverted = RxBool(true);
       base64String(selectedImagePath);
     } else {

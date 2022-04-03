@@ -22,7 +22,6 @@ class _FeedbackListState extends State<FeedbackList> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getAll();
   }
@@ -30,9 +29,17 @@ class _FeedbackListState extends State<FeedbackList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Feedback List"),
+      ),
       body: FutureBuilder(
         future: getAll(),
         builder: (context, snapshot) {
+          if (snapshot.hasData == false) {
+            return const Center(
+              child: Text("No Data Found"),
+            );
+          }
           if (snapshot.hasData) {
             // return Center(
             //     child: Padding(
