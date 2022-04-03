@@ -78,9 +78,9 @@ class DBHelper {
     // await db!.delete(tableName);
   }
 
-  Future<List<Map<String, dynamic>>> getData() async {
+  Future<List<Map<String, dynamic>>> getData(String _email) async {
     Database? db = await instance.database;
 
-    return await db!.query(tableName, where: email);
+    return await db!.query(tableName, where: "UserEmail == ?", whereArgs: [_email]);
   }
 }
