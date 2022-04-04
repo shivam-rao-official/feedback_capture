@@ -343,12 +343,20 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                   height: 7.0,
                                 ),
                                 DropdownSearch<Product>(
-                                  mode: Mode.BOTTOM_SHEET,
+                                  mode: Mode.DIALOG,
                                   showSearchBox: true,
                                   showClearButton: true,
+                                  popupSafeArea:
+                                      const PopupSafeAreaProps(top: true),
                                   dropdownSearchDecoration:
                                       const InputDecoration(
                                     hintText: "Select Product",
+                                    hintStyle: TextStyle(
+                                      fontFamily: AppFonts.appFont,
+                                      fontSize: AppFonts.fontSize,
+                                    ),
+                                    contentPadding:
+                                        EdgeInsets.fromLTRB(0, 5, 0, 0),
                                   ),
                                   validator: (input) => (input == null)
                                       ? "Select a product to continue"
@@ -375,6 +383,9 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                       _subCategoryValue.text = '';
                                     }
                                   },
+                                ),
+                                const SizedBox(
+                                  height: 7.0,
                                 ),
                                 TextFormField(
                                   enabled: false,
