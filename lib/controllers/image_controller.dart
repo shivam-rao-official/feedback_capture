@@ -1,6 +1,7 @@
 // ignore_for_file: library_prefixes
 
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io' as Io;
 
 // ignore_for_file: deprecated_member_use
@@ -19,8 +20,10 @@ class ImageController extends GetxController {
     if (pickedFile != null) {
       selectedImagePath.value = pickedFile.path;
       isImageSelected = RxBool(true);
-      isConverted = RxBool(true);
-      base64String(selectedImagePath);
+      // base64String(selectedImagePath);
+      // log("1");
+      // isConverted.value = true;
+      // log("2");
     } else {
       ToastMsg().warningToast("No Image is selected");
     }
@@ -30,6 +33,5 @@ class ImageController extends GetxController {
     final byte = Io.File(selectedImagePath.value).readAsBytesSync();
     String img64 = base64.encode(byte);
     toBase64String.value = img64;
-    isConverted = RxBool(false);
   }
 }

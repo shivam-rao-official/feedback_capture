@@ -468,14 +468,17 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                         width: 100,
                                         child: GestureDetector(
                                           onTap: () {
-                                            _cameraController.isImageSelected.isFalse ? showModalBottomSheet(
-                                                context: context,
-                                                builder: ((builder) =>
-                                                    CustomOpenImage(
-                                                      context: context,
-                                                      controller:
-                                                          _cameraController,
-                                                    ))): null;
+                                            _cameraController
+                                                    .isImageSelected.isFalse
+                                                ? showModalBottomSheet(
+                                                    context: context,
+                                                    builder: ((builder) =>
+                                                        CustomOpenImage(
+                                                          context: context,
+                                                          controller:
+                                                              _cameraController,
+                                                        )))
+                                                : null;
                                           },
                                           child: imagePicker(
                                             Obx(() {
@@ -519,17 +522,34 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                                                           3),
                                                             ),
                                                             child: Center(
-                                                              child:
-                                                                  MaterialButton(
-                                                                      onPressed:
-                                                                          () {
-                                                                        _cameraController
-                                                                            .selectedImagePath
-                                                                            .value = '';
-                                                                            _cameraController.isImageSelected.value = false;
-                                                                      },
-                                                                      child: const Text(
-                                                                          "DELETE")),
+                                                              child: MaterialButton(
+                                                                  onPressed: () {
+                                                                    Get.defaultDialog(
+                                                                        title: "Action Required",
+                                                                        middleText: "Are you sure to delete this Image?",
+                                                                        onCancel: () {
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        },
+                                                                        confirmTextColor: Colors.white,
+                                                                        onConfirm: () {
+                                                                          _cameraController
+                                                                              .selectedImagePath
+                                                                              .value = '';
+                                                                          _cameraController
+                                                                              .isImageSelected
+                                                                              .value = false;
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        });
+                                                                  },
+                                                                  child: const Center(
+                                                                      child: Icon(
+                                                                    Icons
+                                                                        .delete_forever,
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ))),
                                                             ),
                                                           ),
                                                         ),
@@ -546,14 +566,17 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                         width: 100,
                                         child: GestureDetector(
                                           onTap: () {
-                                            _cameraController1.isImageSelected.isFalse ? showModalBottomSheet(
-                                                context: context,
-                                                builder: ((builder) =>
-                                                    CustomOpenImage(
-                                                      context: context,
-                                                      controller:
-                                                          _cameraController1,
-                                                    ))): null;
+                                            _cameraController1
+                                                    .isImageSelected.isFalse
+                                                ? showModalBottomSheet(
+                                                    context: context,
+                                                    builder: ((builder) =>
+                                                        CustomOpenImage(
+                                                          context: context,
+                                                          controller:
+                                                              _cameraController1,
+                                                        )))
+                                                : null;
                                           },
                                           child: imagePicker(
                                             Obx(() {
@@ -597,17 +620,34 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                                                           3),
                                                             ),
                                                             child: Center(
-                                                              child:
-                                                                  MaterialButton(
-                                                                      onPressed:
-                                                                          () {
-                                                                        _cameraController1
-                                                                            .selectedImagePath
-                                                                            .value = '';
-                                                                            _cameraController1.isImageSelected.value = false;
-                                                                      },
-                                                                      child: const Text(
-                                                                          "DELETE")),
+                                                              child: MaterialButton(
+                                                                  onPressed: () {
+                                                                    Get.defaultDialog(
+                                                                        title: "Action Required",
+                                                                        middleText: "Are you sure to delete this Image?",
+                                                                        onCancel: () {
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        },
+                                                                        confirmTextColor: Colors.white,
+                                                                        onConfirm: () {
+                                                                          _cameraController1
+                                                                              .selectedImagePath
+                                                                              .value = '';
+                                                                          _cameraController1
+                                                                              .isImageSelected
+                                                                              .value = false;
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        });
+                                                                  },
+                                                                  child: const Center(
+                                                                      child: Icon(
+                                                                    Icons
+                                                                        .delete_forever,
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ))),
                                                             ),
                                                           ),
                                                         ),
@@ -678,19 +718,34 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                                                           3),
                                                             ),
                                                             child: Center(
-                                                              child:
-                                                                  MaterialButton(
-                                                                      onPressed:
-                                                                          () {
-                                                                        _cameraController2
-                                                                            .selectedImagePath
-                                                                            .value = '';
-                                                                        _cameraController2
-                                                                            .isImageSelected
-                                                                            .value = false;
-                                                                      },
-                                                                      child: const Text(
-                                                                          "DELETE")),
+                                                              child: MaterialButton(
+                                                                  onPressed: () {
+                                                                    Get.defaultDialog(
+                                                                        title: "Action Required",
+                                                                        middleText: "Are you sure to delete this Image?",
+                                                                        onCancel: () {
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        },
+                                                                        confirmTextColor: Colors.white,
+                                                                        onConfirm: () {
+                                                                          _cameraController2
+                                                                              .selectedImagePath
+                                                                              .value = '';
+                                                                          _cameraController2
+                                                                              .isImageSelected
+                                                                              .value = false;
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        });
+                                                                  },
+                                                                  child: const Center(
+                                                                      child: Icon(
+                                                                    Icons
+                                                                        .delete_forever,
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ))),
                                                             ),
                                                           ),
                                                         ),
