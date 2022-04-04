@@ -90,7 +90,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
         selectedCompanyValue = null;
         selectedProductValue = null;
         _categoryValue.text = '';
-        _categoryValue.text = '';
+        _subCategoryValue.text = '';
         selectedGenreOfFeedback = null;
         _feedback.clear();
         _cameraController.selectedImagePath.value = '';
@@ -146,7 +146,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
     _outletController.dispose();
     _feedbackController.dispose();
     _companyController.dispose();
-    // _productController.dispose();
+    _productController.dispose();
     // _subCategoryController.dispose();
     _feedback.dispose();
     _cameraController.dispose();
