@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
@@ -23,9 +22,7 @@ class DBHelper {
   static const genreOfFeedback = "GenreOfFeedback";
   static const feedback = "Feedback";
   static const feedbackImage = "FeedbackImage";
-  static const image1 = "Image1";
-  static const image2 = "Image2";
-  static const image3 = "Image3";
+
 
   static Database? _database;
   DBHelper._privateConstructor();
@@ -57,10 +54,7 @@ class DBHelper {
         $category TEXT NOT NULL,
         $subCategory TEXT NOT NULL,
         $genreOfFeedback TEXT NOT NULL,
-        $feedback TEXT NOT NULL,
-        $image1 TEXT,
-        $image2 TEXT,
-        $image3 TEXT
+        $feedback TEXT NOT NULL
         )
     ''');
   }

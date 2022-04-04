@@ -72,9 +72,9 @@ class _FeedbackPageState extends State<FeedbackPage> {
 
       Map<String, dynamic> imagedata = {
         ImageDBHelper.email: storeUserMail.read("email"),
-        ImageDBHelper.image1: _cameraController.toBase64String.value,
-        ImageDBHelper.image2: _cameraController1.toBase64String.value,
-        ImageDBHelper.image3: _cameraController2.toBase64String.value,
+        ImageDBHelper.image1: _cameraController.selectedImagePath.value,
+        ImageDBHelper.image2: _cameraController1.selectedImagePath.value,
+        ImageDBHelper.image3: _cameraController2.selectedImagePath.value,
       };
       await dbHelper.putData(row);
       await imagedbHelper.putImage(imagedata);

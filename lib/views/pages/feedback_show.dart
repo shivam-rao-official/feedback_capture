@@ -1,10 +1,10 @@
+import 'dart:io';
+
 import 'package:feedback_capture/consts/app_fonts.dart';
 import 'package:feedback_capture/consts/app_sizes.dart';
 import 'package:feedback_capture/consts/app_themes.dart';
 import 'package:feedback_capture/dbhelper/db_helper.dart';
 import 'package:feedback_capture/dbhelper/imagedb_helper.dart';
-import 'package:feedback_capture/views/pages/feedback_list.dart';
-import 'package:feedback_capture/views/widgets/custom_button.dart';
 import 'package:feedback_capture/views/widgets/custom_clip_path.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -37,15 +37,24 @@ class FeedbackShow extends StatefulWidget {
 
 class _FeedbackShowState extends State<FeedbackShow> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final storeUserMail = GetStorage();
+  String? userMail;
 
   // DB INSTANCE -- Db Insertion
   final dbHelper = DBHelper.instance;
   final imagedbHelper = ImageDBHelper.instance;
 
+  // var r = await imagedbHelper.getImage(email);
+  Future<List> getImage(String email, int id) async {
+    var r = await imagedbHelper.getImage(email, id);
+    // log(r.toString());
+    return r;
+  }
+
   @override
   void initState() {
     super.initState();
+    userMail = GetStorage().read("email");
+    getImage(userMail!, widget.colId);
   }
 
   @override
@@ -83,20 +92,40 @@ class _FeedbackShowState extends State<FeedbackShow> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: const [
-                            Text(
-                              "Feedback",
-                              style: TextStyle(
-                                fontFamily: AppFonts.appFont,
-                                fontSize: AppFonts.subHeadingSize,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                              ),
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  "Feedback",
+                                  style: TextStyle(
+                                    fontFamily: AppFonts.appFont,
+                                    fontSize: AppFonts.subHeadingSize,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.arrow_back_ios,
+                                      color: AppThemes.primaryColor,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    shape: const CircleBorder(),
+                                    primary: Colors.white,
+                                  ),
+                                ),
+                              ],
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10.0,
                             ),
-                            Text(
+                            const Text(
                               "Please provide the following information",
                               style: TextStyle(
                                 fontFamily: AppFonts.appFont,
@@ -206,229 +235,73 @@ class _FeedbackShowState extends State<FeedbackShow> {
                                 const SizedBox(
                                   height: 7.0,
                                 ),
-                                // SingleChildScrollView(
-                                //   scrollDirection: Axis.horizontal,
-                                //   child: Row(
-                                //     mainAxisAlignment:
-                                //         MainAxisAlignment.spaceBetween,
-                                //     children: [
-                                //       SizedBox(
-                                //         width: 100,
-                                //         child: GestureDetector(
-                                //           onTap: () {
-                                //             _cameraController
-                                //                     .isImageSelected.isFalse
-                                //                 ? showModalBottomSheet(
-                                //                     context: context,
-                                //                     builder: ((builder) =>
-                                //                         CustomOpenImage(
-                                //                           context: context,
-                                //                           controller:
-                                //                               _cameraController,
-                                //                         )))
-                                //                 : null;
-                                //           },
-                                //           child: imagePicker(
-                                //             Obx(() {
-                                //               return _cameraController
-                                //                           .selectedImagePath
-                                //                           .value ==
-                                //                       ''
-                                //                   ? Icon(
-                                //                       Icons.add_a_photo,
-                                //                       color: Colors.grey
-                                //                           .withOpacity(0.4),
-                                //                     )
-                                //                   : Stack(
-                                //                       children: [
-                                //                         SizedBox(
-                                //                           height: 150,
-                                //                           width: 100,
-                                //                           child: Image.file(
-                                //                             File(_cameraController
-                                //                                 .selectedImagePath
-                                //                                 .value),
-                                //                             fit: BoxFit.fill,
-                                //                           ),
-                                //                         ),
-                                //                         Positioned(
-                                //                           bottom: 0,
-                                //                           child: Container(
-                                //                             width: MediaQuery.of(
-                                //                                             context)
-                                //                                         .size
-                                //                                         .width /
-                                //                                     4 +
-                                //                                 4,
-                                //                             height: 20,
-                                //                             decoration:
-                                //                                 BoxDecoration(
-                                //                               color: Colors.red,
-                                //                               borderRadius:
-                                //                                   BorderRadius
-                                //                                       .circular(
-                                //                                           3),
-                                //                             ),
-                                //                             child: Center(
-                                //                               child:
-                                //                                   MaterialButton(
-                                //                                       onPressed:
-                                //                                           () {
-                                //                                         _cameraController
-                                //                                             .selectedImagePath
-                                //                                             .value = '';
-                                //                                         _cameraController
-                                //                                             .isImageSelected
-                                //                                             .value = false;
-                                //                                       },
-                                //                                       child: const Text(
-                                //                                           "DELETE")),
-                                //                             ),
-                                //                           ),
-                                //                         ),
-                                //                       ],
-                                //                     );
-                                //             }),
-                                //           ),
-                                //         ),
-                                //       ),
-                                //       const SizedBox(
-                                //         width: 3.0,
-                                //       ),
-                                //       SizedBox(
-                                //         width: 100,
-                                //         child: GestureDetector(
-                                //           onTap: () {
-                                //             _cameraController1
-                                //                     .isImageSelected.isFalse
-                                //                 ? showModalBottomSheet(
-                                //                     context: context,
-                                //                     builder: ((builder) =>
-                                //                         CustomOpenImage(
-                                //                           context: context,
-                                //                           controller:
-                                //                               _cameraController1,
-                                //                         )))
-                                //                 : null;
-                                //           },
-                                //           child: imagePicker(
-                                //             Obx(() {
-                                //               return _cameraController1
-                                //                           .selectedImagePath
-                                //                           .value ==
-                                //                       ''
-                                //                   ? Icon(
-                                //                       Icons.add_a_photo,
-                                //                       color: Colors.grey
-                                //                           .withOpacity(0.4),
-                                //                     )
-                                //                   : Stack(
-                                //                       children: [
-                                //                         SizedBox(
-                                //                           height: 150,
-                                //                           width: 100,
-                                //                           child: Image.file(
-                                //                             File(_cameraController1
-                                //                                 .selectedImagePath
-                                //                                 .value),
-                                //                             fit: BoxFit.fill,
-                                //                           ),
-                                //                         ),
-                                //                         Positioned(
-                                //                           bottom: 0,
-                                //                           child: Container(
-                                //                             width: MediaQuery.of(
-                                //                                             context)
-                                //                                         .size
-                                //                                         .width /
-                                //                                     4 +
-                                //                                 4,
-                                //                             height: 20,
-                                //                             decoration:
-                                //                                 BoxDecoration(
-                                //                               color: Colors.red,
-                                //                               borderRadius:
-                                //                                   BorderRadius
-                                //                                       .circular(
-                                //                                           3),
-                                //                             ),
-                                //                             child: Center(
-                                //                               child:
-                                //                                   MaterialButton(
-                                //                                       onPressed:
-                                //                                           () {
-                                //                                         _cameraController1
-                                //                                             .selectedImagePath
-                                //                                             .value = '';
-                                //                                         _cameraController1
-                                //                                             .isImageSelected
-                                //                                             .value = false;
-                                //                                       },
-                                //                                       child: const Text(
-                                //                                           "DELETE")),
-                                //                             ),
-                                //                           ),
-                                //                         ),
-                                //                       ],
-                                //                     );
-                                //             }),
-                                //           ),
-                                //         ),
-                                //       ),
-                                //       const SizedBox(
-                                //         width: 3.0,
-                                //       ),
-                                //       SizedBox(
-                                //         width: 100,
-                                //         child: GestureDetector(
-                                //           onTap: () {
-                                //             _cameraController2
-                                //                     .isImageSelected.isFalse
-                                //                 ? showModalBottomSheet(
-                                //                     context: context,
-                                //                     builder: ((builder) =>
-                                //                         CustomOpenImage(
-                                //                           context: context,
-                                //                           controller:
-                                //                               _cameraController2,
-                                //                         )))
-                                //                 : null;
-                                //           },
-                                //           child: imagePicker(
-                                //             Obx(() {
-                                //               return _cameraController2
-                                //                           .selectedImagePath
-                                //                           .value ==
-                                //                       ''
-                                //                   ? Icon(
-                                //                       Icons.add_a_photo,
-                                //                       color: Colors.grey
-                                //                           .withOpacity(0.4),
-                                //                     )
-                                //                   : Stack(
-                                //                       children: [
-                                //                         SizedBox(
-                                //                           height: 150,
-                                //                           width: 100,
-                                //                           child: Image.file(
-                                //                             File(_cameraController2
-                                //                                 .selectedImagePath
-                                //                                 .value),
-                                //                             fit: BoxFit.fill,
-                                //                           ),
-                                //                         ),
-                                //                       ],
-                                //                     );
-                                //             }),
-                                //           ),
-                                //         ),
-                                //       ),
-                                //     ],
-                                //   ),
-                                // ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
+                                SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: FutureBuilder(
+                                        future:
+                                            getImage(userMail!, widget.colId),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.hasData == false) {
+                                            return const Center(
+                                                child: Text("No Data Found"));
+                                          }
+                                          if (snapshot.hasError) {
+                                            return const Center(
+                                                child: Text("Error Occurred"));
+                                          }
+                                          return Row(
+                                            children: [
+                                              showImage((snapshot.data!
+                                                              as List)[0]
+                                                          ['Image1'] !=
+                                                      ''
+                                                  ? SizedBox(
+                                                      height: 150,
+                                                      width: 100,
+                                                      child: Image.file(
+                                                          File((snapshot.data!
+                                                                  as List)[0]
+                                                              ['Image1']),
+                                                          fit: BoxFit.cover),
+                                                    )
+                                                  : const Center(
+                                                      child: Text("No Preview"),
+                                                    )),
+                                              showImage((snapshot.data!
+                                                              as List)[0]
+                                                          ['Image2'] !=
+                                                      ''
+                                                  ? SizedBox(
+                                                      height: 150,
+                                                      width: 100,
+                                                      child: Image.file(
+                                                          File((snapshot.data!
+                                                                  as List)[0]
+                                                              ['Image2']),
+                                                          fit: BoxFit.cover),
+                                                    )
+                                                  : const Center(
+                                                      child: Text("No Preview"),
+                                                    )),
+                                              showImage((snapshot.data!
+                                                              as List)[0]
+                                                          ['Image3'] !=
+                                                      ''
+                                                  ? SizedBox(
+                                                      height: 150,
+                                                      width: 100,
+                                                      child: Image.file(
+                                                          File((snapshot.data!
+                                                                  as List)[0]
+                                                              ['Image3']),
+                                                          fit: BoxFit.cover),
+                                                    )
+                                                  : const Center(
+                                                      child: Text("No Preview"),
+                                                    )),
+                                            ],
+                                          );
+                                        })),
                               ],
                             ),
                           ),
@@ -445,11 +318,11 @@ class _FeedbackShowState extends State<FeedbackShow> {
     );
   }
 
-  Widget imagePicker(Obx obx) {
+  Widget showImage(Widget wd) {
     return Container(
-      child: Center(child: obx),
+      child: wd,
       height: 150,
-      width: MediaQuery.of(context).size.width,
+      width: 100,
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(

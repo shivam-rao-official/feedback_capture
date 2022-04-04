@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:feedback_capture/dbhelper/db_helper.dart';
 import 'package:feedback_capture/dbhelper/imagedb_helper.dart';
@@ -21,9 +20,7 @@ class _FeedbackListState extends State<FeedbackList> {
   int len = 0;
   Future<List> getAll(String email) async {
     var row = await dbHelper.getData(email);
-    var r = await imagedbHelper.getImage(email);
     len = row.length;
-    log(r.toString());
     return row;
   }
 
