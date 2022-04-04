@@ -350,6 +350,9 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                       const InputDecoration(
                                     hintText: "Select Product",
                                   ),
+                                  validator: (input) => (input == null)
+                                      ? "Select a product to continue"
+                                      : null,
                                   items: productItems,
                                   itemAsString: (productItems) =>
                                       productItems!.productName.toString(),
