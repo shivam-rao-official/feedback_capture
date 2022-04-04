@@ -7,7 +7,6 @@ import 'package:feedback_capture/dbhelper/db_helper.dart';
 import 'package:feedback_capture/dbhelper/imagedb_helper.dart';
 import 'package:feedback_capture/views/widgets/custom_clip_path.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 class FeedbackShow extends StatefulWidget {
@@ -15,6 +14,7 @@ class FeedbackShow extends StatefulWidget {
   final String? selectedOutletValue,
       selectedFeedbackValue,
       selectedCompanyValue,
+      selectedProductValue,
       selectedCategoryValue,
       selectedSubCategoryValue,
       selectedGenreOfFeedback,
@@ -25,6 +25,7 @@ class FeedbackShow extends StatefulWidget {
     required this.selectedOutletValue,
     required this.selectedFeedbackValue,
     required this.selectedCompanyValue,
+    required this.selectedProductValue,
     required this.selectedCategoryValue,
     required this.selectedSubCategoryValue,
     required this.selectedGenreOfFeedback,
@@ -186,6 +187,17 @@ class _FeedbackShowState extends State<FeedbackShow> {
                                   decoration: InputDecoration(
                                     labelText:
                                         "Company Name: ${widget.selectedCompanyValue}",
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 7.0,
+                                ),
+                                TextFormField(
+                                  enabled: false,
+                                  readOnly: true,
+                                  decoration: InputDecoration(
+                                    labelText:
+                                        "Product Name: ${widget.selectedProductValue}",
                                   ),
                                 ),
                                 const SizedBox(

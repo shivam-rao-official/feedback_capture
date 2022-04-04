@@ -1,4 +1,3 @@
-
 import 'package:feedback_capture/dbhelper/db_helper.dart';
 import 'package:feedback_capture/dbhelper/imagedb_helper.dart';
 import 'package:feedback_capture/views/pages/feedback_show.dart';
@@ -65,6 +64,8 @@ class _FeedbackListState extends State<FeedbackList> {
                                   ['FeedbackValue'],
                               selectedCompanyValue: (snapshot.data! as List)[i]
                                   ['CompanyValue'],
+                              selectedProductValue: (snapshot.data! as List)[i]
+                                  ['ProductValue'],
                               selectedCategoryValue: (snapshot.data! as List)[i]
                                   ['CategoryValue'],
                               selectedSubCategoryValue: (snapshot.data!

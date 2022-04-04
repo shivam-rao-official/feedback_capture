@@ -135,9 +135,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
         feedbackItems = _feedbackController.feedbackTypes;
         _companyController.getCompanies();
         companyItems = _companyController.companyTypes;
-        // _productController.getProducts();
-        // productItems = _productController.productTypes;
-        // _subCategoryController.getSubCategories();
+        _productController.getProducts();
+        productItems = _productController.productTypes;
       });
     }
   }
@@ -357,18 +356,25 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                   onChanged: (data) {
                                     selectedProductValue =
                                         data?.productName ?? '';
-                                    int index = productItems.indexWhere(
-                                        (element) =>
-                                            element.productName ==
-                                            data!.productName);
+                                    if (selectedProductValue != '') {
+                                      int index = productItems.indexWhere(
+                                          (element) =>
+                                              element.productName ==
+                                              data!.productName);
 
-                                    _categoryValue.text = _productController
-                                        .productTypes[index].categoryName;
-                                    _subCategoryValue.text = _productController
-                                        .productTypes[index].subCategoryName;
+                                      _categoryValue.text = _productController
+                                          .productTypes[index].categoryName;
+                                      _subCategoryValue.text =
+                                          _productController.productTypes[index]
+                                              .subCategoryName;
+                                    } else {
+                                      _categoryValue.text = '';
+                                      _subCategoryValue.text = '';
+                                    }
                                   },
                                 ),
                                 TextFormField(
+                                  enabled: false,
                                   validator: (input) => (input!.length < 2)
                                       ? "Category must not be empty"
                                       : null,
@@ -384,6 +390,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                   height: 7.0,
                                 ),
                                 TextFormField(
+                                  enabled: false,
                                   validator: (input) => (input!.length < 2)
                                       ? "Sub Category must not be empty"
                                       : null,
