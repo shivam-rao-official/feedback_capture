@@ -3,24 +3,24 @@ import 'dart:io';
 import 'package:feedback_capture/consts/app_fonts.dart';
 import 'package:feedback_capture/consts/app_sizes.dart';
 import 'package:feedback_capture/consts/app_themes.dart';
+import 'package:feedback_capture/controllers/category_controller.dart';
 import 'package:feedback_capture/controllers/company_controller.dart';
 import 'package:feedback_capture/controllers/feedback_type_controller.dart';
 import 'package:feedback_capture/controllers/image_controller.dart';
 import 'package:feedback_capture/controllers/outlet_controller.dart';
-import 'package:feedback_capture/controllers/product_controller.dart';
+import 'package:feedback_capture/controllers/sub_category_controller.dart';
 import 'package:feedback_capture/dbhelper/db_helper.dart';
 import 'package:feedback_capture/dbhelper/imagedb_helper.dart';
+import 'package:feedback_capture/models/category.dart';
 import 'package:feedback_capture/models/company.dart';
 import 'package:feedback_capture/models/feedback_type.dart';
 import 'package:feedback_capture/models/outlet.dart';
-import 'package:feedback_capture/models/product.dart';
 import 'package:feedback_capture/views/dialogs/toast_msg.dart';
 import 'package:feedback_capture/views/pages/feedback_list.dart';
 import 'package:feedback_capture/views/pages/login_page.dart';
 import 'package:feedback_capture/views/widgets/custom_button.dart';
 import 'package:feedback_capture/views/widgets/custom_clip_path.dart';
 import 'package:feedback_capture/views/widgets/custom_open_image.dart';
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -40,22 +40,18 @@ class _FeedbackPageState extends State<FeedbackPage> {
       selectedCompanyValue,
       selectedCategoryValue,
       selectedSubCategoryValue,
-      selectedGenreOfFeedback,
-      selectedProductValue;
+      selectedGenreOfFeedback;
 
   // Init Controllers
   final _outletController = OutletController();
   final _feedbackController = FeedbackTypeController();
   final _companyController = CompanyController();
-  final _productController = ProductController();
-  // final _subCategoryController = SubCategoryController();
+  final _categoryController = CategoryController();
+  final _subCategoryController = SubCategoryController();
   final _feedback = TextEditingController();
   final _cameraController = ImageController();
   final _cameraController1 = ImageController();
   final _cameraController2 = ImageController();
-
-  final TextEditingController _categoryValue = TextEditingController();
-  final TextEditingController _subCategoryValue = TextEditingController();
 
   // DB INSTANCE -- Db Insertion
   final dbHelper = DBHelper.instance;
@@ -64,22 +60,19 @@ class _FeedbackPageState extends State<FeedbackPage> {
   void insertData() async {
     try {
       Map<String, dynamic> row = {
-        DBHelper.email: storeUserMail.read("email"),
         DBHelper.outlet: selectedOutletValue,
         DBHelper.feedbackType: selectedFeedbackValue,
         DBHelper.company: selectedCompanyValue,
-        DBHelper.product: selectedProductValue,
-        DBHelper.category: _categoryValue.text,
-        DBHelper.subCategory: _subCategoryValue.text,
+        DBHelper.category: selectedCategoryValue,
+        DBHelper.subCategory: selectedSubCategoryValue,
         DBHelper.genreOfFeedback: selectedFeedbackValue,
         DBHelper.feedback: _feedback.text,
       };
 
       Map<String, dynamic> imagedata = {
-        ImageDBHelper.email: storeUserMail.read("email"),
-        ImageDBHelper.image1: _cameraController.selectedImagePath.value,
-        ImageDBHelper.image2: _cameraController1.selectedImagePath.value,
-        ImageDBHelper.image3: _cameraController2.selectedImagePath.value,
+        ImageDBHelper.image1: _cameraController.toBase64String.value,
+        ImageDBHelper.image2: _cameraController1.toBase64String.value,
+        ImageDBHelper.image3: _cameraController2.toBase64String.value,
       };
       await dbHelper.putData(row);
       await imagedbHelper.putImage(imagedata);
@@ -88,9 +81,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
         selectedOutletValue = null;
         selectedFeedbackValue = null;
         selectedCompanyValue = null;
-        selectedProductValue = null;
-        _categoryValue.text = '';
-        _categoryValue.text = '';
+        selectedCategoryValue = null;
+        selectedSubCategoryValue = null;
         selectedGenreOfFeedback = null;
         _feedback.clear();
         _cameraController.selectedImagePath.value = '';
@@ -109,7 +101,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
   List<Outlet> outletItems = [];
   List<FeedbackType> feedbackItems = [];
   List<Company> companyItems = [];
-  List<Product> productItems = [];
+  List<Category> categoryItems = [];
   List subCategoryItems = [];
   List genreOfFeedback = [
     "Product",
@@ -135,9 +127,9 @@ class _FeedbackPageState extends State<FeedbackPage> {
         feedbackItems = _feedbackController.feedbackTypes;
         _companyController.getCompanies();
         companyItems = _companyController.companyTypes;
-        // _productController.getProducts();
-        // productItems = _productController.productTypes;
-        // _subCategoryController.getSubCategories();
+        _categoryController.getCategories();
+        categoryItems = _categoryController.categoryTypes;
+        _subCategoryController.getSubCategories();
       });
     }
   }
@@ -147,15 +139,12 @@ class _FeedbackPageState extends State<FeedbackPage> {
     _outletController.dispose();
     _feedbackController.dispose();
     _companyController.dispose();
-    // _productController.dispose();
-    // _subCategoryController.dispose();
+    _categoryController.dispose();
+    _subCategoryController.dispose();
     _feedback.dispose();
     _cameraController.dispose();
     _cameraController1.dispose();
     _cameraController2.dispose();
-
-    _categoryValue.dispose();
-    _subCategoryValue.dispose();
     super.dispose();
   }
 
@@ -197,7 +186,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                   "Feedback",
                                   style: TextStyle(
                                     fontFamily: AppFonts.appFont,
-                                    fontSize: AppFonts.subHeadingSize,
+                                    fontSize: AppFonts.headingSize,
                                     fontWeight: FontWeight.w800,
                                     color: Colors.white,
                                   ),
@@ -343,57 +332,73 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                 const SizedBox(
                                   height: 7.0,
                                 ),
-                                DropdownSearch<Product>(
-                                  mode: Mode.BOTTOM_SHEET,
-                                  showSearchBox: true,
-                                  showClearButton: true,
-                                  dropdownSearchDecoration:
-                                      const InputDecoration(
-                                    hintText: "Select Product",
-                                  ),
-                                  items: productItems,
-                                  itemAsString: (productItems) =>
-                                      productItems!.productName.toString(),
-                                  onChanged: (data) {
-                                    selectedProductValue =
-                                        data?.productName ?? '';
-                                    int index = productItems.indexWhere(
-                                        (element) =>
-                                            element.productName ==
-                                            data!.productName);
-
-                                    _categoryValue.text = _productController
-                                        .productTypes[index].categoryName;
-                                    _subCategoryValue.text = _productController
-                                        .productTypes[index].subCategoryName;
-                                  },
-                                ),
-                                TextFormField(
-                                  validator: (input) => (input!.length < 2)
-                                      ? "Category must not be empty"
-                                      : null,
-                                  style: const TextStyle(
-                                    fontSize: AppFonts.fontSize,
-                                  ),
-                                  controller: _categoryValue,
+                                DropdownButtonFormField(
                                   decoration: const InputDecoration(
-                                    hintText: "Category",
+                                    hintText: "Select Category",
                                   ),
+                                  style: const TextStyle(
+                                    fontFamily: AppFonts.appFont,
+                                    fontSize: AppFonts.fontSize,
+                                    color: Colors.black87,
+                                  ),
+                                  validator: (value) => value == null
+                                      ? "Select a category"
+                                      : null,
+                                  value: selectedCategoryValue,
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      selectedCategoryValue = newValue!;
+                                      int index = categoryItems.indexWhere(
+                                          (element) =>
+                                              element.categoryName ==
+                                              selectedCategoryValue);
+
+                                      subCategoryItems = _subCategoryController
+                                          .subCategoryTypes[index]
+                                          .subCategoryName;
+
+                                      selectedSubCategoryValue =
+                                          subCategoryItems[0];
+                                    });
+                                  },
+                                  items: categoryItems
+                                      .map<DropdownMenuItem<String>>(
+                                          (Category value) {
+                                    return DropdownMenuItem(
+                                      child: Text(value.categoryName),
+                                      value: value.categoryName,
+                                    );
+                                  }).toList(),
                                 ),
                                 const SizedBox(
                                   height: 7.0,
                                 ),
-                                TextFormField(
-                                  validator: (input) => (input!.length < 2)
-                                      ? "Sub Category must not be empty"
-                                      : null,
-                                  style: const TextStyle(
-                                    fontSize: AppFonts.fontSize,
-                                  ),
-                                  controller: _subCategoryValue,
+                                DropdownButtonFormField(
+                                  isExpanded: true,
                                   decoration: const InputDecoration(
-                                    hintText: "Sub Category",
+                                    hintText: "Select Sub Category",
                                   ),
+                                  style: const TextStyle(
+                                    fontFamily: AppFonts.appFont,
+                                    fontSize: AppFonts.fontSize,
+                                    color: Colors.black87,
+                                  ),
+                                  validator: (value) => value == null
+                                      ? "Select a sub category"
+                                      : null,
+                                  value: selectedSubCategoryValue,
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      selectedSubCategoryValue = newValue!;
+                                    });
+                                  },
+                                  items: subCategoryItems
+                                      .map<DropdownMenuItem<String>>((subCat) {
+                                    return DropdownMenuItem(
+                                      child: Text(subCat.toString()),
+                                      value: subCat.toString(),
+                                    );
+                                  }).toList(),
                                 ),
                                 const SizedBox(
                                   height: 7.0,
@@ -444,9 +449,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                     fontFamily: AppFonts.appFont,
                                     fontSize: AppFonts.fontSize,
                                   ),
-                                  validator: (value) => value == null
-                                      ? "Feedback is inportant"
-                                      : null,
                                 ),
                                 const SizedBox(
                                   height: 7.0,
@@ -461,17 +463,14 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                         width: 100,
                                         child: GestureDetector(
                                           onTap: () {
-                                            _cameraController
-                                                    .isImageSelected.isFalse
-                                                ? showModalBottomSheet(
-                                                    context: context,
-                                                    builder: ((builder) =>
-                                                        CustomOpenImage(
-                                                          context: context,
-                                                          controller:
-                                                              _cameraController,
-                                                        )))
-                                                : null;
+                                            showModalBottomSheet(
+                                                context: context,
+                                                builder: ((builder) =>
+                                                    CustomOpenImage(
+                                                      context: context,
+                                                      controller:
+                                                          _cameraController,
+                                                    )));
                                           },
                                           child: imagePicker(
                                             Obx(() {
@@ -484,70 +483,10 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                                       color: Colors.grey
                                                           .withOpacity(0.4),
                                                     )
-                                                  : Stack(
-                                                      children: [
-                                                        SizedBox(
-                                                          height: 150,
-                                                          width: 100,
-                                                          child: Image.file(
-                                                            File(_cameraController
-                                                                .selectedImagePath
-                                                                .value),
-                                                            fit: BoxFit.fill,
-                                                          ),
-                                                        ),
-                                                        Positioned(
-                                                          bottom: 0,
-                                                          child: Container(
-                                                            width: MediaQuery.of(
-                                                                            context)
-                                                                        .size
-                                                                        .width /
-                                                                    4 +
-                                                                4,
-                                                            height: 20,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: Colors.red,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          3),
-                                                            ),
-                                                            child: Center(
-                                                              child: MaterialButton(
-                                                                  onPressed: () {
-                                                                    Get.defaultDialog(
-                                                                        title: "Action Required",
-                                                                        middleText: "Are you sure to delete this Image?",
-                                                                        onCancel: () {
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                        },
-                                                                        confirmTextColor: Colors.white,
-                                                                        onConfirm: () {
-                                                                          _cameraController
-                                                                              .selectedImagePath
-                                                                              .value = '';
-                                                                          _cameraController
-                                                                              .isImageSelected
-                                                                              .value = false;
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                        });
-                                                                  },
-                                                                  child: const Center(
-                                                                      child: Icon(
-                                                                    Icons
-                                                                        .delete_forever,
-                                                                    color: Colors
-                                                                        .white,
-                                                                  ))),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    );
+                                                  : Image.file(File(
+                                                      _cameraController
+                                                          .selectedImagePath
+                                                          .value));
                                             }),
                                           ),
                                         ),
@@ -559,17 +498,14 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                         width: 100,
                                         child: GestureDetector(
                                           onTap: () {
-                                            _cameraController1
-                                                    .isImageSelected.isFalse
-                                                ? showModalBottomSheet(
-                                                    context: context,
-                                                    builder: ((builder) =>
-                                                        CustomOpenImage(
-                                                          context: context,
-                                                          controller:
-                                                              _cameraController1,
-                                                        )))
-                                                : null;
+                                            showModalBottomSheet(
+                                                context: context,
+                                                builder: ((builder) =>
+                                                    CustomOpenImage(
+                                                      context: context,
+                                                      controller:
+                                                          _cameraController1,
+                                                    )));
                                           },
                                           child: imagePicker(
                                             Obx(() {
@@ -582,70 +518,10 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                                       color: Colors.grey
                                                           .withOpacity(0.4),
                                                     )
-                                                  : Stack(
-                                                      children: [
-                                                        SizedBox(
-                                                          height: 150,
-                                                          width: 100,
-                                                          child: Image.file(
-                                                            File(_cameraController1
-                                                                .selectedImagePath
-                                                                .value),
-                                                            fit: BoxFit.fill,
-                                                          ),
-                                                        ),
-                                                        Positioned(
-                                                          bottom: 0,
-                                                          child: Container(
-                                                            width: MediaQuery.of(
-                                                                            context)
-                                                                        .size
-                                                                        .width /
-                                                                    4 +
-                                                                4,
-                                                            height: 20,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: Colors.red,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          3),
-                                                            ),
-                                                            child: Center(
-                                                              child: MaterialButton(
-                                                                  onPressed: () {
-                                                                    Get.defaultDialog(
-                                                                        title: "Action Required",
-                                                                        middleText: "Are you sure to delete this Image?",
-                                                                        onCancel: () {
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                        },
-                                                                        confirmTextColor: Colors.white,
-                                                                        onConfirm: () {
-                                                                          _cameraController1
-                                                                              .selectedImagePath
-                                                                              .value = '';
-                                                                          _cameraController1
-                                                                              .isImageSelected
-                                                                              .value = false;
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                        });
-                                                                  },
-                                                                  child: const Center(
-                                                                      child: Icon(
-                                                                    Icons
-                                                                        .delete_forever,
-                                                                    color: Colors
-                                                                        .white,
-                                                                  ))),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    );
+                                                  : Image.file(File(
+                                                      _cameraController1
+                                                          .selectedImagePath
+                                                          .value));
                                             }),
                                           ),
                                         ),
@@ -657,17 +533,14 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                         width: 100,
                                         child: GestureDetector(
                                           onTap: () {
-                                            _cameraController2
-                                                    .isImageSelected.isFalse
-                                                ? showModalBottomSheet(
-                                                    context: context,
-                                                    builder: ((builder) =>
-                                                        CustomOpenImage(
-                                                          context: context,
-                                                          controller:
-                                                              _cameraController2,
-                                                        )))
-                                                : null;
+                                            showModalBottomSheet(
+                                                context: context,
+                                                builder: ((builder) =>
+                                                    CustomOpenImage(
+                                                      context: context,
+                                                      controller:
+                                                          _cameraController2,
+                                                    )));
                                           },
                                           child: imagePicker(
                                             Obx(() {
@@ -680,70 +553,10 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                                       color: Colors.grey
                                                           .withOpacity(0.4),
                                                     )
-                                                  : Stack(
-                                                      children: [
-                                                        SizedBox(
-                                                          height: 150,
-                                                          width: 100,
-                                                          child: Image.file(
-                                                            File(_cameraController2
-                                                                .selectedImagePath
-                                                                .value),
-                                                            fit: BoxFit.fill,
-                                                          ),
-                                                        ),
-                                                        Positioned(
-                                                          bottom: 0,
-                                                          child: Container(
-                                                            width: MediaQuery.of(
-                                                                            context)
-                                                                        .size
-                                                                        .width /
-                                                                    4 +
-                                                                4,
-                                                            height: 20,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: Colors.red,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          3),
-                                                            ),
-                                                            child: Center(
-                                                              child: MaterialButton(
-                                                                  onPressed: () {
-                                                                    Get.defaultDialog(
-                                                                        title: "Action Required",
-                                                                        middleText: "Are you sure to delete this Image?",
-                                                                        onCancel: () {
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                        },
-                                                                        confirmTextColor: Colors.white,
-                                                                        onConfirm: () {
-                                                                          _cameraController2
-                                                                              .selectedImagePath
-                                                                              .value = '';
-                                                                          _cameraController2
-                                                                              .isImageSelected
-                                                                              .value = false;
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                        });
-                                                                  },
-                                                                  child: const Center(
-                                                                      child: Icon(
-                                                                    Icons
-                                                                        .delete_forever,
-                                                                    color: Colors
-                                                                        .white,
-                                                                  ))),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    );
+                                                  : Image.file(File(
+                                                      _cameraController2
+                                                          .selectedImagePath
+                                                          .value));
                                             }),
                                           ),
                                         ),
@@ -757,8 +570,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                 CustomButton(
                                   text: "Submit",
                                   action: () {
-                                    // dbHelper.dropDB();
-                                    // imagedbHelper.dropDB();
                                     var validate =
                                         _formKey.currentState!.validate();
                                     if (validate) {
