@@ -3,24 +3,24 @@ import 'dart:io';
 import 'package:feedback_capture/consts/app_fonts.dart';
 import 'package:feedback_capture/consts/app_sizes.dart';
 import 'package:feedback_capture/consts/app_themes.dart';
+import 'package:feedback_capture/controllers/category_controller.dart';
 import 'package:feedback_capture/controllers/company_controller.dart';
 import 'package:feedback_capture/controllers/feedback_type_controller.dart';
 import 'package:feedback_capture/controllers/image_controller.dart';
 import 'package:feedback_capture/controllers/outlet_controller.dart';
-import 'package:feedback_capture/controllers/product_controller.dart';
+import 'package:feedback_capture/controllers/sub_category_controller.dart';
 import 'package:feedback_capture/dbhelper/db_helper.dart';
 import 'package:feedback_capture/dbhelper/imagedb_helper.dart';
+import 'package:feedback_capture/models/category.dart';
 import 'package:feedback_capture/models/company.dart';
 import 'package:feedback_capture/models/feedback_type.dart';
 import 'package:feedback_capture/models/outlet.dart';
-import 'package:feedback_capture/models/product.dart';
 import 'package:feedback_capture/views/dialogs/toast_msg.dart';
 import 'package:feedback_capture/views/pages/feedback_list.dart';
 import 'package:feedback_capture/views/pages/login_page.dart';
 import 'package:feedback_capture/views/widgets/custom_button.dart';
 import 'package:feedback_capture/views/widgets/custom_clip_path.dart';
 import 'package:feedback_capture/views/widgets/custom_open_image.dart';
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -40,22 +40,18 @@ class _FeedbackPageState extends State<FeedbackPage> {
       selectedCompanyValue,
       selectedCategoryValue,
       selectedSubCategoryValue,
-      selectedGenreOfFeedback,
-      selectedProductValue;
+      selectedGenreOfFeedback;
 
   // Init Controllers
   final _outletController = OutletController();
   final _feedbackController = FeedbackTypeController();
   final _companyController = CompanyController();
-  final _productController = ProductController();
-  // final _subCategoryController = SubCategoryController();
+  final _categoryController = CategoryController();
+  final _subCategoryController = SubCategoryController();
   final _feedback = TextEditingController();
   final _cameraController = ImageController();
   final _cameraController1 = ImageController();
   final _cameraController2 = ImageController();
-
-  final TextEditingController _categoryValue = TextEditingController();
-  final TextEditingController _subCategoryValue = TextEditingController();
 
   // DB INSTANCE -- Db Insertion
   final dbHelper = DBHelper.instance;
@@ -67,9 +63,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
         DBHelper.outlet: selectedOutletValue,
         DBHelper.feedbackType: selectedFeedbackValue,
         DBHelper.company: selectedCompanyValue,
-        DBHelper.product: selectedProductValue,
-        DBHelper.category: _categoryValue.text,
-        DBHelper.subCategory: _subCategoryValue.text,
+        DBHelper.category: selectedCategoryValue,
+        DBHelper.subCategory: selectedSubCategoryValue,
         DBHelper.genreOfFeedback: selectedFeedbackValue,
         DBHelper.feedback: _feedback.text,
       };
@@ -86,9 +81,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
         selectedOutletValue = null;
         selectedFeedbackValue = null;
         selectedCompanyValue = null;
-        selectedProductValue = null;
-        _categoryValue.text = '';
-        _categoryValue.text = '';
+        selectedCategoryValue = null;
+        selectedSubCategoryValue = null;
         selectedGenreOfFeedback = null;
         _feedback.clear();
         _cameraController.selectedImagePath.value = '';
@@ -107,7 +101,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
   List<Outlet> outletItems = [];
   List<FeedbackType> feedbackItems = [];
   List<Company> companyItems = [];
-  List<Product> productItems = [];
+  List<Category> categoryItems = [];
   List subCategoryItems = [];
   List genreOfFeedback = [
     "Product",
@@ -133,9 +127,9 @@ class _FeedbackPageState extends State<FeedbackPage> {
         feedbackItems = _feedbackController.feedbackTypes;
         _companyController.getCompanies();
         companyItems = _companyController.companyTypes;
-        // _productController.getProducts();
-        // productItems = _productController.productTypes;
-        // _subCategoryController.getSubCategories();
+        _categoryController.getCategories();
+        categoryItems = _categoryController.categoryTypes;
+        _subCategoryController.getSubCategories();
       });
     }
   }
@@ -145,15 +139,12 @@ class _FeedbackPageState extends State<FeedbackPage> {
     _outletController.dispose();
     _feedbackController.dispose();
     _companyController.dispose();
-    // _productController.dispose();
-    // _subCategoryController.dispose();
+    _categoryController.dispose();
+    _subCategoryController.dispose();
     _feedback.dispose();
     _cameraController.dispose();
     _cameraController1.dispose();
     _cameraController2.dispose();
-
-    _categoryValue.dispose();
-    _subCategoryValue.dispose();
     super.dispose();
   }
 
@@ -341,57 +332,73 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                 const SizedBox(
                                   height: 7.0,
                                 ),
-                                DropdownSearch<Product>(
-                                  mode: Mode.BOTTOM_SHEET,
-                                  showSearchBox: true,
-                                  showClearButton: true,
-                                  dropdownSearchDecoration:
-                                      const InputDecoration(
-                                    hintText: "Select Product",
-                                  ),
-                                  items: productItems,
-                                  itemAsString: (productItems) =>
-                                      productItems!.productName.toString(),
-                                  onChanged: (data) {
-                                    selectedProductValue =
-                                        data?.productName ?? '';
-                                    int index = productItems.indexWhere(
-                                        (element) =>
-                                            element.productName ==
-                                            data!.productName);
-
-                                    _categoryValue.text = _productController
-                                        .productTypes[index].categoryName;
-                                    _subCategoryValue.text = _productController
-                                        .productTypes[index].subCategoryName;
-                                  },
-                                ),
-                                TextFormField(
-                                  validator: (input) => (input!.length < 2)
-                                      ? "Category must not be empty"
-                                      : null,
-                                  style: const TextStyle(
-                                    fontSize: AppFonts.fontSize,
-                                  ),
-                                  controller: _categoryValue,
+                                DropdownButtonFormField(
                                   decoration: const InputDecoration(
-                                    hintText: "Category",
+                                    hintText: "Select Category",
                                   ),
+                                  style: const TextStyle(
+                                    fontFamily: AppFonts.appFont,
+                                    fontSize: AppFonts.fontSize,
+                                    color: Colors.black87,
+                                  ),
+                                  validator: (value) => value == null
+                                      ? "Select a category"
+                                      : null,
+                                  value: selectedCategoryValue,
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      selectedCategoryValue = newValue!;
+                                      int index = categoryItems.indexWhere(
+                                          (element) =>
+                                              element.categoryName ==
+                                              selectedCategoryValue);
+
+                                      subCategoryItems = _subCategoryController
+                                          .subCategoryTypes[index]
+                                          .subCategoryName;
+
+                                      selectedSubCategoryValue =
+                                          subCategoryItems[0];
+                                    });
+                                  },
+                                  items: categoryItems
+                                      .map<DropdownMenuItem<String>>(
+                                          (Category value) {
+                                    return DropdownMenuItem(
+                                      child: Text(value.categoryName),
+                                      value: value.categoryName,
+                                    );
+                                  }).toList(),
                                 ),
                                 const SizedBox(
                                   height: 7.0,
                                 ),
-                                TextFormField(
-                                  validator: (input) => (input!.length < 2)
-                                      ? "Sub Category must not be empty"
-                                      : null,
-                                  style: const TextStyle(
-                                    fontSize: AppFonts.fontSize,
-                                  ),
-                                  controller: _subCategoryValue,
+                                DropdownButtonFormField(
+                                  isExpanded: true,
                                   decoration: const InputDecoration(
-                                    hintText: "Sub Category",
+                                    hintText: "Select Sub Category",
                                   ),
+                                  style: const TextStyle(
+                                    fontFamily: AppFonts.appFont,
+                                    fontSize: AppFonts.fontSize,
+                                    color: Colors.black87,
+                                  ),
+                                  validator: (value) => value == null
+                                      ? "Select a sub category"
+                                      : null,
+                                  value: selectedSubCategoryValue,
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      selectedSubCategoryValue = newValue!;
+                                    });
+                                  },
+                                  items: subCategoryItems
+                                      .map<DropdownMenuItem<String>>((subCat) {
+                                    return DropdownMenuItem(
+                                      child: Text(subCat.toString()),
+                                      value: subCat.toString(),
+                                    );
+                                  }).toList(),
                                 ),
                                 const SizedBox(
                                   height: 7.0,

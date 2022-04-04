@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
@@ -17,6 +16,7 @@ class DBHelper {
   static const outlet = "OutletValue";
   static const feedbackType = "FeedbackValue";
   static const company = "CompanyValue";
+  static const product = "ProductValue";
   static const category = "CategoryValue";
   static const subCategory = "SubCategoryValue";
   static const genreOfFeedback = "GenreOfFeedback";
@@ -52,6 +52,7 @@ class DBHelper {
         $feedbackType TEXT NOT NULL,
         $outlet TEXT NOT NULL,
         $company TEXT NOT NULL,
+        $product TEXT NOT NULL,
         $category TEXT NOT NULL,
         $subCategory TEXT NOT NULL,
         $genreOfFeedback TEXT NOT NULL,
