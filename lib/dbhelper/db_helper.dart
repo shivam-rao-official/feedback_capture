@@ -13,6 +13,7 @@ class DBHelper {
 
   // DB column name
   static const colIndex = "columnIndex";
+  static const email = "UserEmail";
   static const outlet = "OutletValue";
   static const feedbackType = "FeedbackValue";
   static const company = "CompanyValue";
@@ -22,9 +23,7 @@ class DBHelper {
   static const genreOfFeedback = "GenreOfFeedback";
   static const feedback = "Feedback";
   static const feedbackImage = "FeedbackImage";
-  static const image1 = "Image1";
-  static const image2 = "Image2";
-  static const image3 = "Image3";
+
 
   static Database? _database;
   DBHelper._privateConstructor();
@@ -49,6 +48,7 @@ class DBHelper {
     await db.execute('''
       CREATE TABLE $tableName (
         $colIndex INTEGER PRIMARY KEY,
+        $email TEXT NOT NULL,
         $feedbackType TEXT NOT NULL,
         $outlet TEXT NOT NULL,
         $company TEXT NOT NULL,
@@ -56,10 +56,7 @@ class DBHelper {
         $category TEXT NOT NULL,
         $subCategory TEXT NOT NULL,
         $genreOfFeedback TEXT NOT NULL,
-        $feedback TEXT NOT NULL,
-        $image1 TEXT,
-        $image2 TEXT,
-        $image3 TEXT
+        $feedback TEXT NOT NULL
         )
     ''');
   }
@@ -73,12 +70,13 @@ class DBHelper {
   Future<void> dropDB() async {
     Database? db = await instance.database;
 
-    await db!.delete(tableName);
+    await db!.rawQuery('DROP DATABASE $feedback');
+    // await db!.delete(tableName);
   }
 
-  Future<List<Map<String, dynamic>>> getData() async {
+  Future<List<Map<String, dynamic>>> getData(String _email) async {
     Database? db = await instance.database;
 
-    return await db!.query(tableName);
+    return await db!.query(tableName, where: "UserEmail == ?", whereArgs: [_email]);
   }
 }

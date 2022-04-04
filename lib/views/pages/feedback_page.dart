@@ -64,6 +64,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
   void insertData() async {
     try {
       Map<String, dynamic> row = {
+        DBHelper.email: storeUserMail.read("email"),
         DBHelper.outlet: selectedOutletValue,
         DBHelper.feedbackType: selectedFeedbackValue,
         DBHelper.company: selectedCompanyValue,
@@ -75,9 +76,10 @@ class _FeedbackPageState extends State<FeedbackPage> {
       };
 
       Map<String, dynamic> imagedata = {
-        ImageDBHelper.image1: _cameraController.toBase64String.value,
-        ImageDBHelper.image2: _cameraController1.toBase64String.value,
-        ImageDBHelper.image3: _cameraController2.toBase64String.value,
+        ImageDBHelper.email: storeUserMail.read("email"),
+        ImageDBHelper.image1: _cameraController.selectedImagePath.value,
+        ImageDBHelper.image2: _cameraController1.selectedImagePath.value,
+        ImageDBHelper.image3: _cameraController2.selectedImagePath.value,
       };
       await dbHelper.putData(row);
       await imagedbHelper.putImage(imagedata);
@@ -195,7 +197,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                   "Feedback",
                                   style: TextStyle(
                                     fontFamily: AppFonts.appFont,
-                                    fontSize: AppFonts.headingSize,
+                                    fontSize: AppFonts.subHeadingSize,
                                     fontWeight: FontWeight.w800,
                                     color: Colors.white,
                                   ),
@@ -442,6 +444,9 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                     fontFamily: AppFonts.appFont,
                                     fontSize: AppFonts.fontSize,
                                   ),
+                                  validator: (value) => value == null
+                                      ? "Feedback is inportant"
+                                      : null,
                                 ),
                                 const SizedBox(
                                   height: 7.0,
@@ -456,14 +461,17 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                         width: 100,
                                         child: GestureDetector(
                                           onTap: () {
-                                            showModalBottomSheet(
-                                                context: context,
-                                                builder: ((builder) =>
-                                                    CustomOpenImage(
-                                                      context: context,
-                                                      controller:
-                                                          _cameraController,
-                                                    )));
+                                            _cameraController
+                                                    .isImageSelected.isFalse
+                                                ? showModalBottomSheet(
+                                                    context: context,
+                                                    builder: ((builder) =>
+                                                        CustomOpenImage(
+                                                          context: context,
+                                                          controller:
+                                                              _cameraController,
+                                                        )))
+                                                : null;
                                           },
                                           child: imagePicker(
                                             Obx(() {
@@ -476,10 +484,70 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                                       color: Colors.grey
                                                           .withOpacity(0.4),
                                                     )
-                                                  : Image.file(File(
-                                                      _cameraController
-                                                          .selectedImagePath
-                                                          .value));
+                                                  : Stack(
+                                                      children: [
+                                                        SizedBox(
+                                                          height: 150,
+                                                          width: 100,
+                                                          child: Image.file(
+                                                            File(_cameraController
+                                                                .selectedImagePath
+                                                                .value),
+                                                            fit: BoxFit.fill,
+                                                          ),
+                                                        ),
+                                                        Positioned(
+                                                          bottom: 0,
+                                                          child: Container(
+                                                            width: MediaQuery.of(
+                                                                            context)
+                                                                        .size
+                                                                        .width /
+                                                                    4 +
+                                                                4,
+                                                            height: 20,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: Colors.red,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          3),
+                                                            ),
+                                                            child: Center(
+                                                              child: MaterialButton(
+                                                                  onPressed: () {
+                                                                    Get.defaultDialog(
+                                                                        title: "Action Required",
+                                                                        middleText: "Are you sure to delete this Image?",
+                                                                        onCancel: () {
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        },
+                                                                        confirmTextColor: Colors.white,
+                                                                        onConfirm: () {
+                                                                          _cameraController
+                                                                              .selectedImagePath
+                                                                              .value = '';
+                                                                          _cameraController
+                                                                              .isImageSelected
+                                                                              .value = false;
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        });
+                                                                  },
+                                                                  child: const Center(
+                                                                      child: Icon(
+                                                                    Icons
+                                                                        .delete_forever,
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ))),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    );
                                             }),
                                           ),
                                         ),
@@ -491,14 +559,17 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                         width: 100,
                                         child: GestureDetector(
                                           onTap: () {
-                                            showModalBottomSheet(
-                                                context: context,
-                                                builder: ((builder) =>
-                                                    CustomOpenImage(
-                                                      context: context,
-                                                      controller:
-                                                          _cameraController1,
-                                                    )));
+                                            _cameraController1
+                                                    .isImageSelected.isFalse
+                                                ? showModalBottomSheet(
+                                                    context: context,
+                                                    builder: ((builder) =>
+                                                        CustomOpenImage(
+                                                          context: context,
+                                                          controller:
+                                                              _cameraController1,
+                                                        )))
+                                                : null;
                                           },
                                           child: imagePicker(
                                             Obx(() {
@@ -511,10 +582,70 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                                       color: Colors.grey
                                                           .withOpacity(0.4),
                                                     )
-                                                  : Image.file(File(
-                                                      _cameraController1
-                                                          .selectedImagePath
-                                                          .value));
+                                                  : Stack(
+                                                      children: [
+                                                        SizedBox(
+                                                          height: 150,
+                                                          width: 100,
+                                                          child: Image.file(
+                                                            File(_cameraController1
+                                                                .selectedImagePath
+                                                                .value),
+                                                            fit: BoxFit.fill,
+                                                          ),
+                                                        ),
+                                                        Positioned(
+                                                          bottom: 0,
+                                                          child: Container(
+                                                            width: MediaQuery.of(
+                                                                            context)
+                                                                        .size
+                                                                        .width /
+                                                                    4 +
+                                                                4,
+                                                            height: 20,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: Colors.red,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          3),
+                                                            ),
+                                                            child: Center(
+                                                              child: MaterialButton(
+                                                                  onPressed: () {
+                                                                    Get.defaultDialog(
+                                                                        title: "Action Required",
+                                                                        middleText: "Are you sure to delete this Image?",
+                                                                        onCancel: () {
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        },
+                                                                        confirmTextColor: Colors.white,
+                                                                        onConfirm: () {
+                                                                          _cameraController1
+                                                                              .selectedImagePath
+                                                                              .value = '';
+                                                                          _cameraController1
+                                                                              .isImageSelected
+                                                                              .value = false;
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        });
+                                                                  },
+                                                                  child: const Center(
+                                                                      child: Icon(
+                                                                    Icons
+                                                                        .delete_forever,
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ))),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    );
                                             }),
                                           ),
                                         ),
@@ -526,14 +657,17 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                         width: 100,
                                         child: GestureDetector(
                                           onTap: () {
-                                            showModalBottomSheet(
-                                                context: context,
-                                                builder: ((builder) =>
-                                                    CustomOpenImage(
-                                                      context: context,
-                                                      controller:
-                                                          _cameraController2,
-                                                    )));
+                                            _cameraController2
+                                                    .isImageSelected.isFalse
+                                                ? showModalBottomSheet(
+                                                    context: context,
+                                                    builder: ((builder) =>
+                                                        CustomOpenImage(
+                                                          context: context,
+                                                          controller:
+                                                              _cameraController2,
+                                                        )))
+                                                : null;
                                           },
                                           child: imagePicker(
                                             Obx(() {
@@ -546,10 +680,70 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                                       color: Colors.grey
                                                           .withOpacity(0.4),
                                                     )
-                                                  : Image.file(File(
-                                                      _cameraController2
-                                                          .selectedImagePath
-                                                          .value));
+                                                  : Stack(
+                                                      children: [
+                                                        SizedBox(
+                                                          height: 150,
+                                                          width: 100,
+                                                          child: Image.file(
+                                                            File(_cameraController2
+                                                                .selectedImagePath
+                                                                .value),
+                                                            fit: BoxFit.fill,
+                                                          ),
+                                                        ),
+                                                        Positioned(
+                                                          bottom: 0,
+                                                          child: Container(
+                                                            width: MediaQuery.of(
+                                                                            context)
+                                                                        .size
+                                                                        .width /
+                                                                    4 +
+                                                                4,
+                                                            height: 20,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: Colors.red,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          3),
+                                                            ),
+                                                            child: Center(
+                                                              child: MaterialButton(
+                                                                  onPressed: () {
+                                                                    Get.defaultDialog(
+                                                                        title: "Action Required",
+                                                                        middleText: "Are you sure to delete this Image?",
+                                                                        onCancel: () {
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        },
+                                                                        confirmTextColor: Colors.white,
+                                                                        onConfirm: () {
+                                                                          _cameraController2
+                                                                              .selectedImagePath
+                                                                              .value = '';
+                                                                          _cameraController2
+                                                                              .isImageSelected
+                                                                              .value = false;
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        });
+                                                                  },
+                                                                  child: const Center(
+                                                                      child: Icon(
+                                                                    Icons
+                                                                        .delete_forever,
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ))),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    );
                                             }),
                                           ),
                                         ),
@@ -563,6 +757,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                 CustomButton(
                                   text: "Submit",
                                   action: () {
+                                    // dbHelper.dropDB();
+                                    // imagedbHelper.dropDB();
                                     var validate =
                                         _formKey.currentState!.validate();
                                     if (validate) {

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
@@ -13,6 +12,8 @@ class ImageDBHelper {
   static const tableName = "imageTable";
 
   // DB column name
+  static const email = "UserEmail";
+  static const colIndex = "columnIndex";
   static const image1 = "Image1";
   static const image2 = "Image2";
   static const image3 = "Image3";
@@ -39,6 +40,8 @@ class ImageDBHelper {
   Future _onCreate(Database db, int version) async {
     await db.execute('''
       CREATE TABLE $tableName (
+        $colIndex INTEGER PRIMARY KEY,
+        $email TEXT NOT NULL,
         $image1 TEXT,
         $image2 TEXT,
         $image3 TEXT
@@ -54,13 +57,14 @@ class ImageDBHelper {
 
   Future<void> dropDB() async {
     Database? db = await instance.database;
-
-    await db!.delete(tableName);
+    await db!.rawQuery('DROP TABLE $tableName');
+    // await db!.delete(tableName);
   }
 
-  Future<List<Map<String, dynamic>>> getImage() async {
+  Future<List<Map<String, dynamic>>> getImage(_email, _id) async {
     Database? db = await instance.database;
 
-    return await db!.query(tableName);
+    return await db!
+        .query(tableName, where: "UserEmail == ? AND columnIndex == ?", whereArgs: [_email, _id]);
   }
 }
