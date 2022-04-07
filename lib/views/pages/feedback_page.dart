@@ -1,3 +1,6 @@
+// ignore_for_file: prefer_typing_uninitialized_variables
+
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:feedback_capture/consts/app_fonts.dart';
@@ -6,6 +9,7 @@ import 'package:feedback_capture/consts/app_themes.dart';
 import 'package:feedback_capture/controllers/company_controller.dart';
 import 'package:feedback_capture/controllers/feedback_type_controller.dart';
 import 'package:feedback_capture/controllers/image_controller.dart';
+import 'package:feedback_capture/controllers/location_controller.dart';
 import 'package:feedback_capture/controllers/outlet_controller.dart';
 import 'package:feedback_capture/controllers/product_controller.dart';
 import 'package:feedback_capture/dbhelper/db_helper.dart';
@@ -24,6 +28,7 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:location/location.dart';
 
 class FeedbackPage extends StatefulWidget {
   const FeedbackPage({Key? key}) : super(key: key);
@@ -120,10 +125,18 @@ class _FeedbackPageState extends State<FeedbackPage> {
     "Others"
   ];
 
+  LocationData? locale;
+  getLocationData() async {
+    locale = await getUserLocation();
+    setState(() {});
+    log("$locale");
+  }
+
   @override
   void initState() {
     super.initState();
     getData();
+    getLocationData();
   }
 
   getData() {
@@ -147,7 +160,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
     _feedbackController.dispose();
     _companyController.dispose();
     _productController.dispose();
-    // _subCategoryController.dispose();
     _feedback.dispose();
     _cameraController.dispose();
     _cameraController1.dispose();
@@ -245,556 +257,570 @@ class _FeedbackPageState extends State<FeedbackPage> {
                       decoration: const BoxDecoration(
                           color: Color.fromARGB(255, 236, 236, 236),
                           borderRadius: BorderRadius.all(Radius.circular(20))),
-                      child: Form(
-                        key: _formKey,
-                        child: Padding(
-                          padding:
-                              const EdgeInsets.all(AppSizes.pagePadding - 10),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                DropdownButtonFormField(
-                                  decoration: const InputDecoration(
-                                    hintText: "Select Outlet",
-                                  ),
-                                  style: const TextStyle(
-                                    fontFamily: AppFonts.appFont,
-                                    fontSize: AppFonts.fontSize,
-                                    color: Colors.black87,
-                                  ),
-                                  validator: (value) =>
-                                      value == null ? "Select an outlet" : null,
-                                  value: selectedOutletValue,
-                                  onChanged: (String? newValue) {
-                                    setState(() {
-                                      selectedOutletValue = newValue!;
-                                    });
-                                  },
-                                  items: outletItems
-                                      .map<DropdownMenuItem<String>>(
-                                          (Outlet value) {
-                                    return DropdownMenuItem(
-                                      child: Text(value.outletName),
-                                      value: value.outletId,
-                                    );
-                                  }).toList(),
-                                ),
-                                const SizedBox(
-                                  height: 7.0,
-                                ),
-                                DropdownButtonFormField(
-                                  decoration: const InputDecoration(
-                                    hintText: "Select feedback type",
-                                  ),
-                                  style: const TextStyle(
-                                    fontFamily: AppFonts.appFont,
-                                    fontSize: AppFonts.fontSize,
-                                    color: Colors.black87,
-                                  ),
-                                  validator: (value) => value == null
-                                      ? "Select a feedback type"
-                                      : null,
-                                  value: selectedFeedbackValue,
-                                  onChanged: (String? newValue) {
-                                    setState(() {
-                                      selectedFeedbackValue = newValue!;
-                                    });
-                                  },
-                                  items: feedbackItems
-                                      .map<DropdownMenuItem<String>>(
-                                          (FeedbackType value) {
-                                    return DropdownMenuItem(
-                                      child: Text(value.feedbackName),
-                                      value: value.feedbackName,
-                                    );
-                                  }).toList(),
-                                ),
-                                const SizedBox(
-                                  height: 7.0,
-                                ),
-                                DropdownButtonFormField(
-                                  decoration: const InputDecoration(
-                                    hintText: "Select Company",
-                                  ),
-                                  style: const TextStyle(
-                                    fontFamily: AppFonts.appFont,
-                                    fontSize: AppFonts.fontSize,
-                                    color: Colors.black87,
-                                  ),
-                                  validator: (value) => value == null
-                                      ? "Select a company type"
-                                      : null,
-                                  value: selectedCompanyValue,
-                                  onChanged: (String? newValue) {
-                                    setState(() {
-                                      selectedCompanyValue = newValue!;
-                                    });
-                                  },
-                                  items: companyItems
-                                      .map<DropdownMenuItem<String>>(
-                                          (Company value) {
-                                    return DropdownMenuItem(
-                                      child: Text(value.companyName),
-                                      value: value.companyName,
-                                    );
-                                  }).toList(),
-                                ),
-                                const SizedBox(
-                                  height: 7.0,
-                                ),
-                                DropdownSearch<Product>(
-                                  mode: Mode.DIALOG,
-                                  showSearchBox: true,
-                                  showClearButton: true,
-                                  popupSafeArea:
-                                      const PopupSafeAreaProps(top: true),
-                                  dropdownSearchDecoration:
-                                      const InputDecoration(
-                                    hintText: "Select Product",
-                                    hintStyle: TextStyle(
-                                      fontFamily: AppFonts.appFont,
-                                      fontSize: AppFonts.fontSize,
-                                    ),
-                                    contentPadding:
-                                        EdgeInsets.fromLTRB(0, 5, 0, 0),
-                                  ),
-                                  validator: (input) => (input == null)
-                                      ? "Select a product to continue"
-                                      : null,
-                                  items: productItems,
-                                  itemAsString: (productItems) =>
-                                      productItems!.productName.toString(),
-                                  onChanged: (data) {
-                                    selectedProductValue =
-                                        data?.productName ?? '';
-                                    if (selectedProductValue != '') {
-                                      int index = productItems.indexWhere(
-                                          (element) =>
-                                              element.productName ==
-                                              data!.productName);
-
-                                      _categoryValue.text = _productController
-                                          .productTypes[index].categoryName;
-                                      _subCategoryValue.text =
-                                          _productController.productTypes[index]
-                                              .subCategoryName;
-                                    } else {
-                                      _categoryValue.text = '';
-                                      _subCategoryValue.text = '';
-                                    }
-                                  },
-                                ),
-                                const SizedBox(
-                                  height: 7.0,
-                                ),
-                                TextFormField(
-                                  enabled: false,
-                                  validator: (input) => (input!.length < 2)
-                                      ? "Category must not be empty"
-                                      : null,
-                                  style: const TextStyle(
-                                    fontSize: AppFonts.fontSize,
-                                  ),
-                                  controller: _categoryValue,
-                                  decoration: const InputDecoration(
-                                    hintText: "Category",
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 7.0,
-                                ),
-                                TextFormField(
-                                  enabled: false,
-                                  validator: (input) => (input!.length < 2)
-                                      ? "Sub Category must not be empty"
-                                      : null,
-                                  style: const TextStyle(
-                                    fontSize: AppFonts.fontSize,
-                                  ),
-                                  controller: _subCategoryValue,
-                                  decoration: const InputDecoration(
-                                    hintText: "Sub Category",
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 7.0,
-                                ),
-                                DropdownButtonFormField(
-                                  isExpanded: true,
-                                  decoration: const InputDecoration(
-                                    hintText: "Select genre of feedback",
-                                  ),
-                                  style: const TextStyle(
-                                    fontFamily: AppFonts.appFont,
-                                    fontSize: AppFonts.fontSize,
-                                    color: Colors.black87,
-                                  ),
-                                  validator: (value) => value == null
-                                      ? "Select a genre of feedback"
-                                      : null,
-                                  value: selectedGenreOfFeedback,
-                                  onChanged: (String? newValue) {
-                                    setState(() {
-                                      selectedGenreOfFeedback = newValue!;
-                                    });
-                                  },
-                                  items: genreOfFeedback
-                                      .map<DropdownMenuItem<String>>(
-                                          (feedback) {
-                                    return DropdownMenuItem(
-                                      child: Text(feedback.toString()),
-                                      value: feedback.toString(),
-                                    );
-                                  }).toList(),
-                                ),
-                                const SizedBox(
-                                  height: 13.0,
-                                ),
-                                TextFormField(
-                                  minLines: 4,
-                                  keyboardType: TextInputType.multiline,
-                                  textInputAction: TextInputAction.newline,
-                                  maxLines: 4,
-                                  decoration: const InputDecoration(
-                                    hintText: "Enter your feedback",
-                                    border: OutlineInputBorder(),
-                                  ),
-                                  maxLength: 300,
-                                  controller: _feedback,
-                                  style: const TextStyle(
-                                    fontFamily: AppFonts.appFont,
-                                    fontSize: AppFonts.fontSize,
-                                  ),
-                                  validator: (value) => value == null
-                                      ? "Feedback is inportant"
-                                      : null,
-                                ),
-                                const SizedBox(
-                                  height: 7.0,
-                                ),
-                                SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                      child: locale == null
+                          ? const Center(
+                              child: CircularProgressIndicator(),
+                            )
+                          : Form(
+                              key: _formKey,
+                              child: Padding(
+                                padding: const EdgeInsets.all(
+                                    AppSizes.pagePadding - 10),
+                                child: SingleChildScrollView(
+                                  child: Column(
                                     children: [
-                                      SizedBox(
-                                        width: 100,
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            _cameraController
-                                                    .isImageSelected.isFalse
-                                                ? showModalBottomSheet(
-                                                    context: context,
-                                                    builder: ((builder) =>
-                                                        CustomOpenImage(
-                                                          context: context,
-                                                          controller:
-                                                              _cameraController,
-                                                        )))
-                                                : null;
-                                          },
-                                          child: imagePicker(
-                                            Obx(() {
-                                              return _cameraController
-                                                          .selectedImagePath
-                                                          .value ==
-                                                      ''
-                                                  ? Icon(
-                                                      Icons.add_a_photo,
-                                                      color: Colors.grey
-                                                          .withOpacity(0.4),
-                                                    )
-                                                  : Stack(
-                                                      children: [
-                                                        SizedBox(
-                                                          height: 150,
-                                                          width: 100,
-                                                          child: Image.file(
-                                                            File(_cameraController
-                                                                .selectedImagePath
-                                                                .value),
-                                                            fit: BoxFit.fill,
-                                                          ),
-                                                        ),
-                                                        Positioned(
-                                                          bottom: 0,
-                                                          child: Container(
-                                                            width: MediaQuery.of(
-                                                                            context)
-                                                                        .size
-                                                                        .width /
-                                                                    4 +
-                                                                4,
-                                                            height: 20,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: Colors.red,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          3),
-                                                            ),
-                                                            child: Center(
-                                                              child: MaterialButton(
-                                                                  onPressed: () {
-                                                                    Get.defaultDialog(
-                                                                        title: "Action Required",
-                                                                        middleText: "Are you sure to delete this Image?",
-                                                                        onCancel: () {
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                        },
-                                                                        confirmTextColor: Colors.white,
-                                                                        onConfirm: () {
-                                                                          _cameraController
-                                                                              .selectedImagePath
-                                                                              .value = '';
-                                                                          _cameraController
-                                                                              .isImageSelected
-                                                                              .value = false;
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                        });
-                                                                  },
-                                                                  child: const Center(
-                                                                      child: Icon(
-                                                                    Icons
-                                                                        .delete_forever,
-                                                                    color: Colors
-                                                                        .white,
-                                                                  ))),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    );
-                                            }),
+                                      // TextField for displaying location data as of now.
+                                      TextFormField(
+                                        enabled: false,
+                                        initialValue: "Latitude: ${locale!.longitude} Longitude: ${locale!.latitude}",
+                                      ),
+                                      DropdownButtonFormField(
+                                        decoration: const InputDecoration(
+                                          hintText: "Select Outlet",
+                                        ),
+                                        style: const TextStyle(
+                                          fontFamily: AppFonts.appFont,
+                                          fontSize: AppFonts.fontSize,
+                                          color: Colors.black87,
+                                        ),
+                                        validator: (value) => value == null
+                                            ? "Select an outlet"
+                                            : null,
+                                        value: selectedOutletValue,
+                                        onChanged: (String? newValue) {
+                                          setState(() {
+                                            selectedOutletValue = newValue!;
+                                          });
+                                        },
+                                        items: outletItems
+                                            .map<DropdownMenuItem<String>>(
+                                                (Outlet value) {
+                                          return DropdownMenuItem(
+                                            child: Text(value.outletName),
+                                            value: value.outletId,
+                                          );
+                                        }).toList(),
+                                      ),
+                                      const SizedBox(
+                                        height: 7.0,
+                                      ),
+                                      DropdownButtonFormField(
+                                        decoration: const InputDecoration(
+                                          hintText: "Select feedback type",
+                                        ),
+                                        style: const TextStyle(
+                                          fontFamily: AppFonts.appFont,
+                                          fontSize: AppFonts.fontSize,
+                                          color: Colors.black87,
+                                        ),
+                                        validator: (value) => value == null
+                                            ? "Select a feedback type"
+                                            : null,
+                                        value: selectedFeedbackValue,
+                                        onChanged: (String? newValue) {
+                                          setState(() {
+                                            selectedFeedbackValue = newValue!;
+                                          });
+                                        },
+                                        items: feedbackItems
+                                            .map<DropdownMenuItem<String>>(
+                                                (FeedbackType value) {
+                                          return DropdownMenuItem(
+                                            child: Text(value.feedbackName),
+                                            value: value.feedbackName,
+                                          );
+                                        }).toList(),
+                                      ),
+                                      const SizedBox(
+                                        height: 7.0,
+                                      ),
+                                      DropdownButtonFormField(
+                                        decoration: const InputDecoration(
+                                          hintText: "Select Company",
+                                        ),
+                                        style: const TextStyle(
+                                          fontFamily: AppFonts.appFont,
+                                          fontSize: AppFonts.fontSize,
+                                          color: Colors.black87,
+                                        ),
+                                        validator: (value) => value == null
+                                            ? "Select a company type"
+                                            : null,
+                                        value: selectedCompanyValue,
+                                        onChanged: (String? newValue) {
+                                          setState(() {
+                                            selectedCompanyValue = newValue!;
+                                          });
+                                        },
+                                        items: companyItems
+                                            .map<DropdownMenuItem<String>>(
+                                                (Company value) {
+                                          return DropdownMenuItem(
+                                            child: Text(value.companyName),
+                                            value: value.companyName,
+                                          );
+                                        }).toList(),
+                                      ),
+                                      const SizedBox(
+                                        height: 7.0,
+                                      ),
+                                      DropdownSearch<Product>(
+                                        mode: Mode.DIALOG,
+                                        showSearchBox: true,
+                                        showClearButton: true,
+                                        popupSafeArea:
+                                            const PopupSafeAreaProps(top: true),
+                                        dropdownSearchDecoration:
+                                            const InputDecoration(
+                                          hintText: "Select Product",
+                                          hintStyle: TextStyle(
+                                            fontFamily: AppFonts.appFont,
+                                            fontSize: AppFonts.fontSize,
                                           ),
+                                          contentPadding:
+                                              EdgeInsets.fromLTRB(0, 5, 0, 0),
+                                        ),
+                                        validator: (input) => (input == null)
+                                            ? "Select a product to continue"
+                                            : null,
+                                        items: productItems,
+                                        itemAsString: (productItems) =>
+                                            productItems!.productName
+                                                .toString(),
+                                        onChanged: (data) {
+                                          selectedProductValue =
+                                              data?.productName ?? '';
+                                          if (selectedProductValue != '') {
+                                            int index = productItems.indexWhere(
+                                                (element) =>
+                                                    element.productName ==
+                                                    data!.productName);
+
+                                            _categoryValue.text =
+                                                _productController
+                                                    .productTypes[index]
+                                                    .categoryName;
+                                            _subCategoryValue.text =
+                                                _productController
+                                                    .productTypes[index]
+                                                    .subCategoryName;
+                                          } else {
+                                            _categoryValue.text = '';
+                                            _subCategoryValue.text = '';
+                                          }
+                                        },
+                                      ),
+                                      const SizedBox(
+                                        height: 7.0,
+                                      ),
+                                      TextFormField(
+                                        enabled: false,
+                                        validator: (input) =>
+                                            (input!.length < 2)
+                                                ? "Category must not be empty"
+                                                : null,
+                                        style: const TextStyle(
+                                          fontSize: AppFonts.fontSize,
+                                        ),
+                                        controller: _categoryValue,
+                                        decoration: const InputDecoration(
+                                          hintText: "Category",
                                         ),
                                       ),
-                                      // const SizedBox(
-                                      //   width: 3.0,
-                                      // ),
-                                      SizedBox(
-                                        width: 100,
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            _cameraController1
-                                                    .isImageSelected.isFalse
-                                                ? showModalBottomSheet(
-                                                    context: context,
-                                                    builder: ((builder) =>
-                                                        CustomOpenImage(
-                                                          context: context,
-                                                          controller:
-                                                              _cameraController1,
-                                                        )))
-                                                : null;
-                                          },
-                                          child: imagePicker(
-                                            Obx(() {
-                                              return _cameraController1
-                                                          .selectedImagePath
-                                                          .value ==
-                                                      ''
-                                                  ? Icon(
-                                                      Icons.add_a_photo,
-                                                      color: Colors.grey
-                                                          .withOpacity(0.4),
-                                                    )
-                                                  : Stack(
-                                                      children: [
-                                                        SizedBox(
-                                                          height: 150,
-                                                          width: 100,
-                                                          child: Image.file(
-                                                            File(_cameraController1
-                                                                .selectedImagePath
-                                                                .value),
-                                                            fit: BoxFit.fill,
-                                                          ),
-                                                        ),
-                                                        Positioned(
-                                                          bottom: 0,
-                                                          child: Container(
-                                                            width: MediaQuery.of(
-                                                                            context)
-                                                                        .size
-                                                                        .width /
-                                                                    4 +
-                                                                4,
-                                                            height: 20,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: Colors.red,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          3),
-                                                            ),
-                                                            child: Center(
-                                                              child: MaterialButton(
-                                                                  onPressed: () {
-                                                                    Get.defaultDialog(
-                                                                        title: "Action Required",
-                                                                        middleText: "Are you sure to delete this Image?",
-                                                                        onCancel: () {
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                        },
-                                                                        confirmTextColor: Colors.white,
-                                                                        onConfirm: () {
-                                                                          _cameraController1
-                                                                              .selectedImagePath
-                                                                              .value = '';
-                                                                          _cameraController1
-                                                                              .isImageSelected
-                                                                              .value = false;
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                        });
-                                                                  },
-                                                                  child: const Center(
-                                                                      child: Icon(
-                                                                    Icons
-                                                                        .delete_forever,
-                                                                    color: Colors
-                                                                        .white,
-                                                                  ))),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    );
-                                            }),
-                                          ),
+                                      const SizedBox(
+                                        height: 7.0,
+                                      ),
+                                      TextFormField(
+                                        enabled: false,
+                                        validator: (input) => (input!.length <
+                                                2)
+                                            ? "Sub Category must not be empty"
+                                            : null,
+                                        style: const TextStyle(
+                                          fontSize: AppFonts.fontSize,
+                                        ),
+                                        controller: _subCategoryValue,
+                                        decoration: const InputDecoration(
+                                          hintText: "Sub Category",
                                         ),
                                       ),
-                                      // const SizedBox(
-                                      //   width: 3.0,
-                                      // ),
-                                      SizedBox(
-                                        width: 100,
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            _cameraController2
-                                                    .isImageSelected.isFalse
-                                                ? showModalBottomSheet(
-                                                    context: context,
-                                                    builder: ((builder) =>
-                                                        CustomOpenImage(
-                                                          context: context,
-                                                          controller:
-                                                              _cameraController2,
-                                                        )))
-                                                : null;
-                                          },
-                                          child: imagePicker(
-                                            Obx(() {
-                                              return _cameraController2
-                                                          .selectedImagePath
-                                                          .value ==
-                                                      ''
-                                                  ? Icon(
-                                                      Icons.add_a_photo,
-                                                      color: Colors.grey
-                                                          .withOpacity(0.4),
-                                                    )
-                                                  : Stack(
-                                                      children: [
-                                                        SizedBox(
-                                                          height: 150,
-                                                          width: 100,
-                                                          child: Image.file(
-                                                            File(_cameraController2
-                                                                .selectedImagePath
-                                                                .value),
-                                                            fit: BoxFit.fill,
-                                                          ),
-                                                        ),
-                                                        Positioned(
-                                                          bottom: 0,
-                                                          child: Container(
-                                                            width: MediaQuery.of(
-                                                                            context)
-                                                                        .size
-                                                                        .width /
-                                                                    4 +
-                                                                4,
-                                                            height: 20,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: Colors.red,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          3),
-                                                            ),
-                                                            child: Center(
-                                                              child: MaterialButton(
-                                                                  onPressed: () {
-                                                                    Get.defaultDialog(
-                                                                        title: "Action Required",
-                                                                        middleText: "Are you sure to delete this Image?",
-                                                                        onCancel: () {
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                        },
-                                                                        confirmTextColor: Colors.white,
-                                                                        onConfirm: () {
-                                                                          _cameraController2
-                                                                              .selectedImagePath
-                                                                              .value = '';
-                                                                          _cameraController2
-                                                                              .isImageSelected
-                                                                              .value = false;
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                        });
-                                                                  },
-                                                                  child: const Center(
-                                                                      child: Icon(
-                                                                    Icons
-                                                                        .delete_forever,
-                                                                    color: Colors
-                                                                        .white,
-                                                                  ))),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    );
-                                            }),
-                                          ),
+                                      const SizedBox(
+                                        height: 7.0,
+                                      ),
+                                      DropdownButtonFormField(
+                                        isExpanded: true,
+                                        decoration: const InputDecoration(
+                                          hintText: "Select genre of feedback",
                                         ),
+                                        style: const TextStyle(
+                                          fontFamily: AppFonts.appFont,
+                                          fontSize: AppFonts.fontSize,
+                                          color: Colors.black87,
+                                        ),
+                                        validator: (value) => value == null
+                                            ? "Select a genre of feedback"
+                                            : null,
+                                        value: selectedGenreOfFeedback,
+                                        onChanged: (String? newValue) {
+                                          setState(() {
+                                            selectedGenreOfFeedback = newValue!;
+                                          });
+                                        },
+                                        items: genreOfFeedback
+                                            .map<DropdownMenuItem<String>>(
+                                                (feedback) {
+                                          return DropdownMenuItem(
+                                            child: Text(feedback.toString()),
+                                            value: feedback.toString(),
+                                          );
+                                        }).toList(),
+                                      ),
+                                      const SizedBox(
+                                        height: 13.0,
+                                      ),
+                                      TextFormField(
+                                        minLines: 4,
+                                        keyboardType: TextInputType.multiline,
+                                        textInputAction:
+                                            TextInputAction.newline,
+                                        maxLines: 4,
+                                        decoration: const InputDecoration(
+                                          hintText: "Enter your feedback",
+                                          border: OutlineInputBorder(),
+                                        ),
+                                        maxLength: 300,
+                                        controller: _feedback,
+                                        style: const TextStyle(
+                                          fontFamily: AppFonts.appFont,
+                                          fontSize: AppFonts.fontSize,
+                                        ),
+                                        validator: (value) => value == null
+                                            ? "Feedback is inportant"
+                                            : null,
+                                      ),
+                                      const SizedBox(
+                                        height: 7.0,
+                                      ),
+                                      SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            SizedBox(
+                                              width: 100,
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  _cameraController
+                                                          .isImageSelected
+                                                          .isFalse
+                                                      ? showModalBottomSheet(
+                                                          context: context,
+                                                          builder: ((builder) =>
+                                                              CustomOpenImage(
+                                                                context:
+                                                                    context,
+                                                                controller:
+                                                                    _cameraController,
+                                                              )))
+                                                      : null;
+                                                },
+                                                child: imagePicker(
+                                                  Obx(() {
+                                                    return _cameraController
+                                                                .selectedImagePath
+                                                                .value ==
+                                                            ''
+                                                        ? Icon(
+                                                            Icons.add_a_photo,
+                                                            color: Colors.grey
+                                                                .withOpacity(
+                                                                    0.4),
+                                                          )
+                                                        : Stack(
+                                                            children: [
+                                                              SizedBox(
+                                                                height: 150,
+                                                                width: 100,
+                                                                child:
+                                                                    Image.file(
+                                                                  File(_cameraController
+                                                                      .selectedImagePath
+                                                                      .value),
+                                                                  fit: BoxFit
+                                                                      .fill,
+                                                                ),
+                                                              ),
+                                                              Positioned(
+                                                                bottom: 0,
+                                                                child:
+                                                                    Container(
+                                                                  width: MediaQuery.of(context)
+                                                                              .size
+                                                                              .width /
+                                                                          4 +
+                                                                      4,
+                                                                  height: 20,
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    color: Colors
+                                                                        .red,
+                                                                    borderRadius:
+                                                                        BorderRadius
+                                                                            .circular(3),
+                                                                  ),
+                                                                  child: Center(
+                                                                    child: MaterialButton(
+                                                                        onPressed: () {
+                                                                          Get.defaultDialog(
+                                                                              title: "Action Required",
+                                                                              middleText: "Are you sure to delete this Image?",
+                                                                              onCancel: () {
+                                                                                Navigator.pop(context);
+                                                                              },
+                                                                              confirmTextColor: Colors.white,
+                                                                              onConfirm: () {
+                                                                                _cameraController.selectedImagePath.value = '';
+                                                                                _cameraController.isImageSelected.value = false;
+                                                                                Navigator.pop(context);
+                                                                              });
+                                                                        },
+                                                                        child: const Center(
+                                                                            child: Icon(
+                                                                          Icons
+                                                                              .delete_forever,
+                                                                          color:
+                                                                              Colors.white,
+                                                                        ))),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          );
+                                                  }),
+                                                ),
+                                              ),
+                                            ),
+                                            // const SizedBox(
+                                            //   width: 3.0,
+                                            // ),
+                                            SizedBox(
+                                              width: 100,
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  _cameraController1
+                                                          .isImageSelected
+                                                          .isFalse
+                                                      ? showModalBottomSheet(
+                                                          context: context,
+                                                          builder: ((builder) =>
+                                                              CustomOpenImage(
+                                                                context:
+                                                                    context,
+                                                                controller:
+                                                                    _cameraController1,
+                                                              )))
+                                                      : null;
+                                                },
+                                                child: imagePicker(
+                                                  Obx(() {
+                                                    return _cameraController1
+                                                                .selectedImagePath
+                                                                .value ==
+                                                            ''
+                                                        ? Icon(
+                                                            Icons.add_a_photo,
+                                                            color: Colors.grey
+                                                                .withOpacity(
+                                                                    0.4),
+                                                          )
+                                                        : Stack(
+                                                            children: [
+                                                              SizedBox(
+                                                                height: 150,
+                                                                width: 100,
+                                                                child:
+                                                                    Image.file(
+                                                                  File(_cameraController1
+                                                                      .selectedImagePath
+                                                                      .value),
+                                                                  fit: BoxFit
+                                                                      .fill,
+                                                                ),
+                                                              ),
+                                                              Positioned(
+                                                                bottom: 0,
+                                                                child:
+                                                                    Container(
+                                                                  width: MediaQuery.of(context)
+                                                                              .size
+                                                                              .width /
+                                                                          4 +
+                                                                      4,
+                                                                  height: 20,
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    color: Colors
+                                                                        .red,
+                                                                    borderRadius:
+                                                                        BorderRadius
+                                                                            .circular(3),
+                                                                  ),
+                                                                  child: Center(
+                                                                    child: MaterialButton(
+                                                                        onPressed: () {
+                                                                          Get.defaultDialog(
+                                                                              title: "Action Required",
+                                                                              middleText: "Are you sure to delete this Image?",
+                                                                              onCancel: () {
+                                                                                Navigator.pop(context);
+                                                                              },
+                                                                              confirmTextColor: Colors.white,
+                                                                              onConfirm: () {
+                                                                                _cameraController1.selectedImagePath.value = '';
+                                                                                _cameraController1.isImageSelected.value = false;
+                                                                                Navigator.pop(context);
+                                                                              });
+                                                                        },
+                                                                        child: const Center(
+                                                                            child: Icon(
+                                                                          Icons
+                                                                              .delete_forever,
+                                                                          color:
+                                                                              Colors.white,
+                                                                        ))),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          );
+                                                  }),
+                                                ),
+                                              ),
+                                            ),
+                                            // const SizedBox(
+                                            //   width: 3.0,
+                                            // ),
+                                            SizedBox(
+                                              width: 100,
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  _cameraController2
+                                                          .isImageSelected
+                                                          .isFalse
+                                                      ? showModalBottomSheet(
+                                                          context: context,
+                                                          builder: ((builder) =>
+                                                              CustomOpenImage(
+                                                                context:
+                                                                    context,
+                                                                controller:
+                                                                    _cameraController2,
+                                                              )))
+                                                      : null;
+                                                },
+                                                child: imagePicker(
+                                                  Obx(() {
+                                                    return _cameraController2
+                                                                .selectedImagePath
+                                                                .value ==
+                                                            ''
+                                                        ? Icon(
+                                                            Icons.add_a_photo,
+                                                            color: Colors.grey
+                                                                .withOpacity(
+                                                                    0.4),
+                                                          )
+                                                        : Stack(
+                                                            children: [
+                                                              SizedBox(
+                                                                height: 150,
+                                                                width: 100,
+                                                                child:
+                                                                    Image.file(
+                                                                  File(_cameraController2
+                                                                      .selectedImagePath
+                                                                      .value),
+                                                                  fit: BoxFit
+                                                                      .fill,
+                                                                ),
+                                                              ),
+                                                              Positioned(
+                                                                bottom: 0,
+                                                                child:
+                                                                    Container(
+                                                                  width: MediaQuery.of(context)
+                                                                              .size
+                                                                              .width /
+                                                                          4 +
+                                                                      4,
+                                                                  height: 20,
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    color: Colors
+                                                                        .red,
+                                                                    borderRadius:
+                                                                        BorderRadius
+                                                                            .circular(3),
+                                                                  ),
+                                                                  child: Center(
+                                                                    child: MaterialButton(
+                                                                        onPressed: () {
+                                                                          Get.defaultDialog(
+                                                                              title: "Action Required",
+                                                                              middleText: "Are you sure to delete this Image?",
+                                                                              onCancel: () {
+                                                                                Navigator.pop(context);
+                                                                              },
+                                                                              confirmTextColor: Colors.white,
+                                                                              onConfirm: () {
+                                                                                _cameraController2.selectedImagePath.value = '';
+                                                                                _cameraController2.isImageSelected.value = false;
+                                                                                Navigator.pop(context);
+                                                                              });
+                                                                        },
+                                                                        child: const Center(
+                                                                            child: Icon(
+                                                                          Icons
+                                                                              .delete_forever,
+                                                                          color:
+                                                                              Colors.white,
+                                                                        ))),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          );
+                                                  }),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 30,
+                                      ),
+                                      CustomButton(
+                                        text: "Submit",
+                                        action: () {
+                                          // dbHelper.dropDB();
+                                          // imagedbHelper.dropDB();
+                                          var validate =
+                                              _formKey.currentState!.validate();
+                                          if (validate) {
+                                            insertData();
+                                          }
+                                        },
+                                      ),
+                                      const SizedBox(
+                                        height: 10,
                                       ),
                                     ],
                                   ),
                                 ),
-                                const SizedBox(
-                                  height: 30,
-                                ),
-                                CustomButton(
-                                  text: "Submit",
-                                  action: () {
-                                    // dbHelper.dropDB();
-                                    // imagedbHelper.dropDB();
-                                    var validate =
-                                        _formKey.currentState!.validate();
-                                    if (validate) {
-                                      insertData();
-                                    }
-                                  },
-                                ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
                     ),
                   ),
                 ],

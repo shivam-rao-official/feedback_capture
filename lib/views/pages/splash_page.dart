@@ -1,14 +1,17 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:feedback_capture/consts/app_fonts.dart';
 import 'package:feedback_capture/consts/app_sizes.dart';
 import 'package:feedback_capture/consts/app_themes.dart';
+import 'package:feedback_capture/controllers/location_controller.dart';
 import 'package:feedback_capture/views/pages/feedback_page.dart';
 import 'package:feedback_capture/views/pages/login_page.dart';
 import 'package:feedback_capture/views/widgets/custom_clip_path.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:location/location.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({Key? key}) : super(key: key);
@@ -20,9 +23,11 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage> {
   Widget _defaultHome = const LoginPage();
   final isLoggedIn = GetStorage();
+
   @override
   void initState() {
     super.initState();
+
     Timer(const Duration(milliseconds: 3000), () {
       if (isLoggedIn.read("email") != null) {
         setState(() {

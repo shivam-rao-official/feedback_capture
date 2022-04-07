@@ -1,6 +1,7 @@
 import 'package:feedback_capture/consts/app_fonts.dart';
 import 'package:feedback_capture/consts/app_sizes.dart';
 import 'package:feedback_capture/consts/app_themes.dart';
+import 'package:feedback_capture/controllers/location_controller.dart';
 import 'package:feedback_capture/views/dialogs/toast_msg.dart';
 import 'package:feedback_capture/views/pages/feedback_page.dart';
 import 'package:feedback_capture/views/widgets/custom_button.dart';
@@ -8,6 +9,7 @@ import 'package:feedback_capture/views/widgets/custom_clip_path.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:location/location.dart';
 
 class OtpPage extends StatefulWidget {
   final String email;
@@ -22,6 +24,17 @@ class _OtpPageState extends State<OtpPage> {
   late String _otp;
 
   final storeUserMail = GetStorage();
+  LocationData? _userLocation;
+  Future getLocationData() async {
+    _userLocation = await getUserLocation();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getLocationData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
